@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title layout:title-pattern="$CONTENT_TITLE - $LAYOUT_TITLE" th:text="#{app.name}">AploseERP</title>
+
+    <!-- Bootstrap 5 via WebJars -->
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.min.css}"/>
+    <!-- Custom styles -->
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+
+    <th:block layout:fragment="head-extra"/>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+<!-- Top Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" th:href="@{/dashboard}">
+            <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+            <span th:text="#{app.name}">AploseERP</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTop">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarTop">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <!-- Language switcher -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-translate"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" th:href="@{/locale?lang=en}">English</a></li>
+                        <li><a class="dropdown-item" th:href="@{/locale?lang=fr}">Français</a></li>
+                    </ul>
+                </li>
+                <!-- User menu -->
+                <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-1"></i>
+                        <span sec:authentication="principal.displayName">User</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" th:href="@{/profile}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                        <li><hr class="dropdown-divider"/></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="bi bi-box-arrow-right me-2"></i>
+                                    <span th:text="#{nav.logout}">Sign Out</span>
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="d-flex flex-grow-1">
+    <!-- Sidebar -->
+    <nav class="sidebar bg-dark text-white" style="min-width:220px; min-height:calc(100vh - 56px);">
+        <div class="pt-3 px-2">
+            <ul class="nav flex-column">
+
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link text-white" th:href="@{/dashboard}"
+                       th:classappend="${#strings.startsWith(#request.requestURI,'/dashboard')} ? 'active bg-primary rounded' : ''">
+                        <i class="bi bi-speedometer2 me-2"></i>
+                        <span th:text="#{nav.dashboard}">Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- CRM -->
+                <li class="nav-item mt-2">
+                    <small class="text-muted px-3 text-uppercase" style="font-size:.7rem;" th:text="#{nav.crm}">CRM</small>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('THIRD_PARTY_READ')">
+                    <a class="nav-link text-white" th:href="@{/third-parties}">
+                        <i class="bi bi-building me-2"></i>
+                        <span th:text="#{nav.thirdparties}">Third Parties</span>
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('CONTACT_READ')">
+                    <a class="nav-link text-white" th:href="@{/contacts}">
+                        <i class="bi bi-person-lines-fill me-2"></i>
+                        <span th:text="#{nav.contacts}">Contacts</span>
+                    </a>
+                </li>
+
+                <!-- Commerce -->
+                <li class="nav-item mt-2">
+                    <small class="text-muted px-3 text-uppercase" style="font-size:.7rem;" th:text="#{nav.commerce}">Commerce</small>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('PROPOSAL_READ')">
+                    <a class="nav-link text-white" th:href="@{/proposals}">
+                        <i class="bi bi-file-earmark-text me-2"></i>
+                        <span th:text="#{nav.proposals}">Proposals</span>
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('SALES_ORDER_READ')">
+                    <a class="nav-link text-white" th:href="@{/orders}">
+                        <i class="bi bi-cart3 me-2"></i>
+                        <span th:text="#{nav.orders}">Orders</span>
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('INVOICE_READ')">
+                    <a class="nav-link text-white" th:href="@{/invoices}">
+                        <i class="bi bi-receipt me-2"></i>
+                        <span th:text="#{nav.invoices}">Invoices</span>
+                    </a>
+                </li>
+
+                <!-- Catalog -->
+                <li class="nav-item mt-2">
+                    <small class="text-muted px-3 text-uppercase" style="font-size:.7rem;" th:text="#{nav.catalog}">Catalog</small>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('PRODUCT_READ')">
+                    <a class="nav-link text-white" th:href="@{/products}">
+                        <i class="bi bi-box-seam me-2"></i>
+                        <span th:text="#{nav.products}">Products</span>
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('CURRENCY_ADMIN')">
+                    <a class="nav-link text-white" th:href="@{/currencies}">
+                        <i class="bi bi-currency-exchange me-2"></i>
+                        <span th:text="#{nav.currencies}">Currencies</span>
+                    </a>
+                </li>
+
+                <!-- Projects -->
+                <li class="nav-item mt-2">
+                    <small class="text-muted px-3 text-uppercase" style="font-size:.7rem;" th:text="#{nav.projects}">Projects</small>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('PROJECT_READ')">
+                    <a class="nav-link text-white" th:href="@{/projects}">
+                        <i class="bi bi-kanban me-2"></i>
+                        <span th:text="#{nav.projects}">Projects</span>
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('AGENDA_READ')">
+                    <a class="nav-link text-white" th:href="@{/agenda}">
+                        <i class="bi bi-calendar3 me-2"></i>
+                        <span th:text="#{nav.agenda}">Agenda</span>
+                    </a>
+                </li>
+
+                <!-- Admin -->
+                <li class="nav-item mt-2" sec:authorize="hasAnyAuthority('ROLE_SUPER_ADMIN','ROLE_TENANT_ADMIN')">
+                    <small class="text-muted px-3 text-uppercase" style="font-size:.7rem;" th:text="#{nav.admin}">Admin</small>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('USER_READ')">
+                    <a class="nav-link text-white" th:href="@{/admin/users}">
+                        <i class="bi bi-people me-2"></i>
+                        <span th:text="#{nav.users}">Users</span>
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('ROLE_READ')">
+                    <a class="nav-link text-white" th:href="@{/admin/roles}">
+                        <i class="bi bi-shield-lock me-2"></i>
+                        <span th:text="#{nav.roles}">Roles</span>
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAuthority('TENANT_READ')">
+                    <a class="nav-link text-white" th:href="@{/admin/settings}">
+                        <i class="bi bi-gear me-2"></i>
+                        <span th:text="#{nav.settings}">Settings</span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="flex-grow-1 p-4">
+        <!-- Flash messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div layout:fragment="content">
+            <!-- Page content goes here -->
+        </div>
+    </main>
+</div>
+
+<!-- Footer -->
+<footer class="bg-light border-top py-2 text-center text-muted" style="font-size:.8rem;">
+    <span th:text="#{app.name}">AploseERP</span> &copy; <span th:text="${#dates.year(#dates.createNow())}">2025</span>
+    &mdash; Open Source ERP
+</footer>
+
+<!-- Bootstrap JS -->
+<script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+
+<th:block layout:fragment="scripts"/>
+</body>
+</html>

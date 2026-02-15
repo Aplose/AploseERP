@@ -1,0 +1,76 @@
+plugins {
+    id 'org.springframework.boot' version '4.0.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+}
+
+group = 'fr.aplose'
+version = '1.0.0-SNAPSHOT'
+java.sourceCompatibility = JavaVersion.VERSION_21
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Web + Thymeleaf (SB4: Tomcat is now an explicit starter)
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-tomcat'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:3.3.0'
+
+    // Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // Data
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    // Databases
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // Utils
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    // WebJars - Bootstrap 5 + icons (no npm needed)
+    implementation 'org.webjars:bootstrap:5.3.3'
+    implementation 'org.webjars.npm:bootstrap-icons:1.13.1'
+    implementation 'org.webjars:jquery:3.7.1'
+    implementation 'org.webjars:webjars-locator-core:0.59'
+
+    // Caching (for i18n DB overrides)
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'com.github.ben-manes.caffeine:caffeine'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'com.h2database:h2'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// Termux / Android memory constraints
+bootRun {
+    jvmArgs = [
+        '-Xmx384m',
+        '-Xms128m',
+        '-XX:+UseSerialGC',
+        '-XX:TieredStopAtLevel=1',
+        '-Dspring.profiles.active=dev'
+    ]
+}

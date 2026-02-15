@@ -1,0 +1,44 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/aploseErpDev;AUTO_SERVER=TRUE;MODE=PostgreSQL;NON_KEYWORDS=USER
+    driver-class-name: org.h2.Driver
+    username: aploseErp
+    password: aploseErp
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+  thymeleaf:
+    cache: false
+  web:
+    resources:
+      cache:
+        period: 0
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false
+
+logging:
+  level:
+    fr.aplose.erp: DEBUG
+    org.springframework.security: DEBUG
+    org.flywaydb: DEBUG
+
+# Termux / Android: keep embedded Tomcat lean
+server:
+  tomcat:
+    threads:
+      max: 10
+      min-spare: 2
+    connection-timeout: 20000

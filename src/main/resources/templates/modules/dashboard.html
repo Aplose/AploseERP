@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="#{dashboard.title}">Dashboard</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center mb-4">
+        <i class="bi bi-speedometer2 text-primary me-3" style="font-size: 1.8rem;"></i>
+        <div>
+            <h4 class="mb-0" th:text="#{dashboard.title}">Dashboard</h4>
+            <small class="text-muted"
+                   th:text="${#messages.msg('dashboard.welcome', #authentication.principal.displayName)}">
+                Welcome back
+            </small>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-sm-6 col-xl-3" sec:authorize="hasAuthority('INVOICE_READ')">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-primary bg-opacity-10 rounded p-3">
+                            <i class="bi bi-receipt text-primary" style="font-size:1.5rem;"></i>
+                        </div>
+                        <div class="ms-3">
+                            <div class="text-muted small" th:text="#{nav.invoices}">Invoices</div>
+                            <div class="fw-bold fs-4" th:text="${kpi?.openInvoices ?: 0}">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3" sec:authorize="hasAuthority('PROPOSAL_READ')">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-success bg-opacity-10 rounded p-3">
+                            <i class="bi bi-file-earmark-text text-success" style="font-size:1.5rem;"></i>
+                        </div>
+                        <div class="ms-3">
+                            <div class="text-muted small" th:text="#{nav.proposals}">Proposals</div>
+                            <div class="fw-bold fs-4" th:text="${kpi?.openProposals ?: 0}">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3" sec:authorize="hasAuthority('PROJECT_READ')">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-warning bg-opacity-10 rounded p-3">
+                            <i class="bi bi-kanban text-warning" style="font-size:1.5rem;"></i>
+                        </div>
+                        <div class="ms-3">
+                            <div class="text-muted small" th:text="#{nav.projects}">Projects</div>
+                            <div class="fw-bold fs-4" th:text="${kpi?.activeProjects ?: 0}">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3" sec:authorize="hasAuthority('THIRD_PARTY_READ')">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 bg-info bg-opacity-10 rounded p-3">
+                            <i class="bi bi-building text-info" style="font-size:1.5rem;"></i>
+                        </div>
+                        <div class="ms-3">
+                            <div class="text-muted small" th:text="#{nav.thirdparties}">Third Parties</div>
+                            <div class="fw-bold fs-4" th:text="${kpi?.thirdParties ?: 0}">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Upcoming events -->
+    <div class="row g-3">
+        <div class="col-12 col-xl-6" sec:authorize="hasAuthority('AGENDA_READ')">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h6 class="mb-0"><i class="bi bi-calendar3 me-2"></i><span th:text="#{nav.agenda}">Agenda</span></h6>
+                </div>
+                <div class="card-body">
+                    <div th:if="${upcomingEvents == null or upcomingEvents.isEmpty()}"
+                         class="text-muted text-center py-3">
+                        <i class="bi bi-calendar-x" style="font-size:2rem;"></i>
+                        <p class="mb-0 mt-2">No upcoming events</p>
+                    </div>
+                    <ul class="list-group list-group-flush" th:unless="${upcomingEvents == null or upcomingEvents.isEmpty()}">
+                        <li class="list-group-item px-0" th:each="event : ${upcomingEvents}">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary me-2"
+                                      th:text="${#temporals.format(event.startDatetime, 'dd MMM')}">01 Jan</span>
+                                <span th:text="${event.title}">Event</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-6" sec:authorize="hasAuthority('INVOICE_READ')">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h6 class="mb-0 text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Overdue Invoices</h6>
+                </div>
+                <div class="card-body">
+                    <div th:if="${overdueInvoices == null or overdueInvoices.isEmpty()}"
+                         class="text-muted text-center py-3">
+                        <i class="bi bi-check-circle text-success" style="font-size:2rem;"></i>
+                        <p class="mb-0 mt-2">No overdue invoices</p>
+                    </div>
+                    <ul class="list-group list-group-flush" th:unless="${overdueInvoices == null or overdueInvoices.isEmpty()}">
+                        <li class="list-group-item px-0" th:each="inv : ${overdueInvoices}">
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{/invoices/{id}(id=${inv.id})}" th:text="${inv.reference}">INV-001</a>
+                                <span class="text-danger fw-bold" th:text="${inv.amountRemaining}">0.00</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:aploseErp}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    url: ${spring.datasource.url}
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
+  thymeleaf:
+    cache: true
+
+server:
+  forward-headers-strategy: NATIVE
+  servlet:
+    session:
+      cookie:
+        secure: true
+
+logging:
+  level:
+    fr.aplose.erp: INFO
+    org.springframework.security: WARN
+  file:
+    name: /var/log/aploseErp/aploseErp.log
