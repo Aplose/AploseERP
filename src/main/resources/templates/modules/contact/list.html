@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Contacts</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0"><i class="bi bi-person-lines-fill text-primary me-2"></i>Contacts</h4>
+            <small class="text-muted" th:text="${contacts.totalElements} + ' records'">0 records</small>
+        </div>
+        <a th:href="@{/contacts/new}" class="btn btn-primary" sec:authorize="hasAuthority('CONTACT_CREATE')">
+            <i class="bi bi-plus-lg me-1"></i>New Contact
+        </a>
+    </div>
+
+    <!-- Search -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2">
+            <form th:action="@{/contacts}" method="get" class="d-flex gap-2">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control"
+                           placeholder="Search by name, email, phone..."
+                           th:value="${q}"/>
+                </div>
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+                <a th:href="@{/contacts}" class="btn btn-outline-secondary"
+                   th:if="${!#strings.isEmpty(q)}">Clear</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Job Title</th>
+                        <th>Third Party</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${contacts.isEmpty()}">
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            No contacts found.
+                        </td>
+                    </tr>
+                    <tr th:each="c : ${contacts}">
+                        <td>
+                            <a th:href="@{/contacts/{id}(id=${c.id})}"
+                               class="fw-semibold text-decoration-none" th:text="${c.fullName}">Name</a>
+                            <span th:if="${c.primary}" class="ms-1 badge bg-success">Primary</span>
+                        </td>
+                        <td>
+                            <span th:text="${c.jobTitle ?: ''}">—</span>
+                            <small th:if="${c.department}" class="text-muted d-block"
+                                   th:text="${c.department}"></small>
+                        </td>
+                        <td>
+                            <a th:if="${c.thirdParty != null}"
+                               th:href="@{/third-parties/{id}(id=${c.thirdParty.id})}"
+                               th:text="${c.thirdParty.name}" class="text-decoration-none"></a>
+                            <span th:unless="${c.thirdParty != null}" class="text-muted">—</span>
+                        </td>
+                        <td>
+                            <a th:if="${c.email}" th:href="'mailto:' + ${c.email}" th:text="${c.email}"></a>
+                            <span th:unless="${c.email}" class="text-muted">—</span>
+                        </td>
+                        <td th:text="${c.phoneMobile ?: c.phone ?: '—'}">—</td>
+                        <td>
+                            <span class="badge"
+                                  th:classappend="${c.status == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
+                                  th:text="${c.status}">ACTIVE</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a th:href="@{/contacts/{id}(id=${c.id})}"
+                                   class="btn btn-outline-secondary" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a th:href="@{/contacts/{id}/edit(id=${c.id})}"
+                                   class="btn btn-outline-primary" title="Edit"
+                                   sec:authorize="hasAuthority('CONTACT_UPDATE')">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form th:action="@{/contacts/{id}/delete(id=${c.id})}" method="post"
+                                      class="d-inline"
+                                      sec:authorize="hasAuthority('CONTACT_DELETE')"
+                                      onsubmit="return confirm('Delete this contact?')">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center"
+             th:if="${contacts.totalPages > 1}">
+            <small class="text-muted"
+                   th:text="'Page ' + (${contacts.number} + 1) + ' of ' + ${contacts.totalPages}"></small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${contacts.first} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/contacts(q=${q},page=${contacts.number - 1})}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${contacts.last} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/contacts(q=${q},page=${contacts.number + 1})}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

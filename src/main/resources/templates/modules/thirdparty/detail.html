@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${tp.name}">Third Party</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Header -->
+    <div class="d-flex align-items-start justify-content-between mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a th:href="@{/third-parties}">Third Parties</a></li>
+                    <li class="breadcrumb-item active" th:text="${tp.code}">CODE</li>
+                </ol>
+            </nav>
+            <h4 class="mb-1" th:text="${tp.name}">Name</h4>
+            <div>
+                <span th:if="${tp.customer}" class="badge bg-primary me-1">Customer</span>
+                <span th:if="${tp.supplier}" class="badge bg-warning text-dark me-1">Supplier</span>
+                <span th:if="${tp.prospect}" class="badge bg-info text-dark me-1">Prospect</span>
+                <span class="badge"
+                      th:classappend="${tp.status == 'ACTIVE'} ? 'bg-success' : 'bg-secondary'"
+                      th:text="${tp.status}">ACTIVE</span>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a th:href="@{/third-parties/{id}/edit(id=${tp.id})}"
+               class="btn btn-outline-primary btn-sm"
+               sec:authorize="hasAuthority('THIRD_PARTY_UPDATE')">
+                <i class="bi bi-pencil me-1"></i>Edit
+            </a>
+            <form th:action="@{/third-parties/{id}/delete(id=${tp.id})}" method="post"
+                  sec:authorize="hasAuthority('THIRD_PARTY_DELETE')"
+                  onsubmit="return confirm('Delete this third party?')">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash me-1"></i>Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- General Info -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent fw-semibold">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>General Information
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted fw-normal">Code</dt>
+                        <dd class="col-sm-8 fw-semibold" th:text="${tp.code}">—</dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Legal Form</dt>
+                        <dd class="col-sm-8" th:text="${tp.legalForm ?: '—'}">—</dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Tax ID</dt>
+                        <dd class="col-sm-8" th:text="${tp.taxId ?: '—'}">—</dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Reg. No.</dt>
+                        <dd class="col-sm-8" th:text="${tp.registrationNo ?: '—'}">—</dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Website</dt>
+                        <dd class="col-sm-8">
+                            <a th:if="${tp.website}" th:href="${tp.website}" target="_blank"
+                               th:text="${tp.website}"></a>
+                            <span th:unless="${tp.website}">—</span>
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Currency</dt>
+                        <dd class="col-sm-8" th:text="${tp.currencyCode ?: '—'}">—</dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Payment Terms</dt>
+                        <dd class="col-sm-8"
+                            th:text="${tp.paymentTerms != null} ? ${tp.paymentTerms} + ' days' : '—'">—</dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Credit Limit</dt>
+                        <dd class="col-sm-8" th:text="${tp.creditLimit != null} ? ${#numbers.formatDecimal(tp.creditLimit, 1, 2)} : '—'">—</dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Balance</dt>
+                        <dd class="col-sm-8 fw-semibold"
+                            th:classappend="${tp.balance != null && tp.balance.compareTo(T(java.math.BigDecimal).ZERO) > 0} ? 'text-danger' : 'text-success'"
+                            th:text="${#numbers.formatDecimal(tp.balance, 1, 2)}">0.00</dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Sales Rep</dt>
+                        <dd class="col-sm-8"
+                            th:text="${tp.salesRep != null} ? ${tp.salesRep.getDisplayName()} : '—'">—</dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Tags</dt>
+                        <dd class="col-sm-8">
+                            <span th:if="${tp.tags}" th:each="tag : ${#strings.arraySplit(tp.tags, ',')}"
+                                  class="badge bg-light text-dark border me-1" th:text="${#strings.trim(tag)}"></span>
+                            <span th:unless="${tp.tags}">—</span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact & Address -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-transparent fw-semibold">
+                    <i class="bi bi-telephone me-2 text-primary"></i>Contact
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted fw-normal">Email</dt>
+                        <dd class="col-sm-8">
+                            <a th:if="${tp.email}" th:href="'mailto:' + ${tp.email}" th:text="${tp.email}"></a>
+                            <span th:unless="${tp.email}">—</span>
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Phone</dt>
+                        <dd class="col-sm-8" th:text="${tp.phone ?: '—'}">—</dd>
+
+                        <dt class="col-sm-4 text-muted fw-normal">Fax</dt>
+                        <dd class="col-sm-8" th:text="${tp.fax ?: '—'}">—</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent fw-semibold">
+                    <i class="bi bi-geo-alt me-2 text-primary"></i>Address
+                </div>
+                <div class="card-body">
+                    <address class="mb-0">
+                        <span th:if="${tp.addressLine1}" th:text="${tp.addressLine1}"></span>
+                        <br th:if="${tp.addressLine1}"/>
+                        <span th:if="${tp.addressLine2}" th:text="${tp.addressLine2}"></span>
+                        <br th:if="${tp.addressLine2}"/>
+                        <span th:if="${tp.postalCode}" th:text="${tp.postalCode + ' '}"></span>
+                        <span th:if="${tp.city}" th:text="${tp.city}"></span>
+                        <br th:if="${tp.city || tp.postalCode}"/>
+                        <span th:if="${tp.stateProvince}" th:text="${tp.stateProvince}"></span>
+                        <br th:if="${tp.stateProvince}"/>
+                        <strong th:if="${tp.countryCode}" th:text="${tp.countryCode}"></strong>
+                        <span th:unless="${tp.addressLine1 || tp.city || tp.countryCode}" class="text-muted">No address on file</span>
+                    </address>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="col-12" th:if="${tp.notes}">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent fw-semibold">
+                    <i class="bi bi-chat-text me-2 text-primary"></i>Notes
+                </div>
+                <div class="card-body">
+                    <p class="mb-0 text-pre-wrap" th:text="${tp.notes}"></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>

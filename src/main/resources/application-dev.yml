@@ -10,11 +10,10 @@ spring:
       path: /h2-console
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
   thymeleaf:
     cache: false
@@ -28,17 +27,15 @@ server:
     session:
       cookie:
         secure: false
+  # Termux / Android: keep embedded Tomcat lean
+  tomcat:
+    threads:
+      max: 10
+      min-spare: 2
+    connection-timeout: 20000
 
 logging:
   level:
     fr.aplose.erp: DEBUG
     org.springframework.security: DEBUG
     org.flywaydb: DEBUG
-
-# Termux / Android: keep embedded Tomcat lean
-server:
-  tomcat:
-    threads:
-      max: 10
-      min-spare: 2
-    connection-timeout: 20000

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title>Edit User</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center mb-4">
+        <a th:href="@{/admin/users}" class="btn btn-sm btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h4 class="mb-0">
+            <i class="bi bi-person-gear text-primary me-2"></i>
+            Edit User: <span class="text-muted fw-normal" th:text="'@' + ${username}">@user</span>
+        </h4>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form th:action="@{/admin/users/{id}/edit(id=${userId})}" method="post" th:object="${user}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" th:field="*{email}"
+                                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"/>
+                                <div class="invalid-feedback" th:errors="*{email}"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Phone</label>
+                                <input type="text" class="form-control" th:field="*{phone}"/>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">First Name</label>
+                                <input type="text" class="form-control" th:field="*{firstName}"/>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Last Name</label>
+                                <input type="text" class="form-control" th:field="*{lastName}"/>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Language</label>
+                                <select class="form-select" th:field="*{locale}">
+                                    <option value="">Default</option>
+                                    <option th:each="loc : ${locales}"
+                                            th:value="${loc.toLanguageTag()}"
+                                            th:text="${loc.getDisplayName(loc)}">English</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Timezone</label>
+                                <input type="text" class="form-control" th:field="*{timezone}"
+                                       placeholder="e.g. Europe/Paris"/>
+                            </div>
+
+                            <!-- Roles -->
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Roles</label>
+                                <div class="row g-2">
+                                    <div class="col-md-4" th:each="role : ${roles}">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox"
+                                                   name="roleIds"
+                                                   th:value="${role.id}"
+                                                   th:id="'role_' + ${role.id}"
+                                                   th:checked="${user.roleIds.contains(role.id)}"/>
+                                            <label class="form-check-label" th:for="'role_' + ${role.id}"
+                                                   th:text="${role.name}">Role</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 d-flex gap-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox"
+                                           th:field="*{active}" id="active"/>
+                                    <label class="form-check-label" for="active">Active</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox"
+                                           th:field="*{tenantAdmin}" id="tenantAdmin"/>
+                                    <label class="form-check-label" for="tenantAdmin">Tenant Administrator</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4"/>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg me-1"></i>Save Changes
+                            </button>
+                            <a th:href="@{/admin/users}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

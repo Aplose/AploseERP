@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${tpId != null} ? 'Edit Third Party' : 'New Third Party'">Third Party Form</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/third-parties}">Third Parties</a></li>
+                <li th:if="${tpId != null}" class="breadcrumb-item">
+                    <a th:href="@{/third-parties/{id}(id=${tpId})}" th:text="${tp.code ?: tpId}">Detail</a>
+                </li>
+                <li class="breadcrumb-item active"
+                    th:text="${tpId != null} ? 'Edit' : 'New'">Form</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">
+            <i class="bi bi-building me-2 text-primary"></i>
+            <span th:text="${tpId != null} ? 'Edit Third Party' : 'New Third Party'">Third Party</span>
+        </h4>
+    </div>
+
+    <!-- Error message -->
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <form th:action="${tpId != null} ? @{/third-parties/{id}/edit(id=${tpId})} : @{/third-parties/new}"
+          th:object="${tp}" method="post" novalidate>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="row g-4">
+
+            <!-- Identity -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent fw-semibold">
+                        <i class="bi bi-person-badge me-2 text-primary"></i>Identity
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control text-uppercase"
+                                       th:field="*{code}"
+                                       th:classappend="${#fields.hasErrors('code')} ? 'is-invalid'"
+                                       placeholder="e.g. CUST001" maxlength="50"/>
+                                <div class="invalid-feedback" th:errors="*{code}"></div>
+                            </div>
+                            <div class="col-md-9">
+                                <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control"
+                                       th:field="*{name}"
+                                       th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                                       placeholder="Company or person name" maxlength="255"/>
+                                <div class="invalid-feedback" th:errors="*{name}"></div>
+                            </div>
+
+                            <!-- Type checkboxes -->
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Type</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="chkCustomer"
+                                               th:field="*{customer}"/>
+                                        <label class="form-check-label" for="chkCustomer">
+                                            <span class="badge bg-primary">Customer</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="chkSupplier"
+                                               th:field="*{supplier}"/>
+                                        <label class="form-check-label" for="chkSupplier">
+                                            <span class="badge bg-warning text-dark">Supplier</span>
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="chkProspect"
+                                               th:field="*{prospect}"/>
+                                        <label class="form-check-label" for="chkProspect">
+                                            <span class="badge bg-info text-dark">Prospect</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Legal Form</label>
+                                <input type="text" class="form-control" th:field="*{legalForm}"
+                                       placeholder="e.g. SA, SAS, LLC" maxlength="100"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Tax ID (VAT)</label>
+                                <input type="text" class="form-control" th:field="*{taxId}"
+                                       placeholder="VAT / Tax number" maxlength="100"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Registration No.</label>
+                                <input type="text" class="form-control" th:field="*{registrationNo}"
+                                       placeholder="Company registration" maxlength="100"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-transparent fw-semibold">
+                        <i class="bi bi-telephone me-2 text-primary"></i>Contact
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control"
+                                       th:field="*{email}"
+                                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                                       placeholder="contact@company.com" maxlength="255"/>
+                                <div class="invalid-feedback" th:errors="*{email}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phone</label>
+                                <input type="text" class="form-control" th:field="*{phone}"
+                                       placeholder="+1 234 567 890" maxlength="50"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Fax</label>
+                                <input type="text" class="form-control" th:field="*{fax}"
+                                       placeholder="+1 234 567 891" maxlength="50"/>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Website</label>
+                                <input type="text" class="form-control" th:field="*{website}"
+                                       placeholder="https://www.company.com" maxlength="255"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-transparent fw-semibold">
+                        <i class="bi bi-geo-alt me-2 text-primary"></i>Address
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label">Address Line 1</label>
+                                <input type="text" class="form-control" th:field="*{addressLine1}"
+                                       placeholder="Street address" maxlength="255"/>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Address Line 2</label>
+                                <input type="text" class="form-control" th:field="*{addressLine2}"
+                                       placeholder="Apt, suite, building..." maxlength="255"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Postal Code</label>
+                                <input type="text" class="form-control" th:field="*{postalCode}"
+                                       maxlength="20"/>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">City</label>
+                                <input type="text" class="form-control" th:field="*{city}"
+                                       maxlength="100"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">State / Province</label>
+                                <input type="text" class="form-control" th:field="*{stateProvince}"
+                                       maxlength="100"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Country Code (ISO)</label>
+                                <input type="text" class="form-control text-uppercase" th:field="*{countryCode}"
+                                       placeholder="FR, US, MA..." maxlength="2"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent fw-semibold">
+                        <i class="bi bi-currency-euro me-2 text-primary"></i>Financial
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Currency Code</label>
+                                <input type="text" class="form-control text-uppercase" th:field="*{currencyCode}"
+                                       placeholder="EUR, USD..." maxlength="3"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Payment Terms (days)</label>
+                                <input type="number" class="form-control" th:field="*{paymentTerms}"
+                                       min="0" max="365"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Credit Limit</label>
+                                <input type="number" class="form-control" th:field="*{creditLimit}"
+                                       step="0.01" min="0"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" th:field="*{status}">
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="INACTIVE">Inactive</option>
+                                    <option value="BLOCKED">Blocked</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes & Tags -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent fw-semibold">
+                        <i class="bi bi-chat-text me-2 text-primary"></i>Notes &amp; Tags
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-control" th:field="*{notes}" rows="4"
+                                          placeholder="Internal notes..."></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Tags</label>
+                                <input type="text" class="form-control" th:field="*{tags}"
+                                       placeholder="vip, key-account, ..." maxlength="500"/>
+                                <small class="text-muted">Comma-separated tags</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>
+                    <span th:text="${tpId != null} ? 'Update' : 'Create'">Save</span>
+                </button>
+                <a th:href="${tpId != null} ? @{/third-parties/{id}(id=${tpId})} : @{/third-parties}"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Cancel
+                </a>
+            </div>
+
+        </div>
+    </form>
+
+</div>
+</body>
+</html>
