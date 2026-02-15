@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${productId != null} ? 'Edit Product' : 'New Product'">Product Form</title></head>
+<body>
+<div layout:fragment="content">
+
+    <!-- Header -->
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/products}">Products</a></li>
+                <li th:if="${productId != null}" class="breadcrumb-item">
+                    <a th:href="@{/products/{id}(id=${productId})}" th:text="${product.code ?: productId}">Detail</a>
+                </li>
+                <li class="breadcrumb-item active"
+                    th:text="${productId != null} ? 'Edit' : 'New'">Form</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">
+            <i class="bi bi-box-seam me-2 text-primary"></i>
+            <span th:text="${productId != null} ? 'Edit Product' : 'New Product'">Product</span>
+        </h4>
+    </div>
+
+    <!-- Error message -->
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <form th:action="${productId != null} ? @{/products/{id}/edit(id=${productId})} : @{/products/new}"
+          th:object="${product}" method="post" novalidate>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="row g-4">
+
+            <!-- Identity -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent fw-semibold">
+                        <i class="bi bi-tag me-2 text-primary"></i>Identity
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control text-uppercase"
+                                       th:field="*{code}"
+                                       th:classappend="${#fields.hasErrors('code')} ? 'is-invalid'"
+                                       placeholder="e.g. PROD001" maxlength="100"/>
+                                <div class="invalid-feedback" th:errors="*{code}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control"
+                                       th:field="*{name}"
+                                       th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                                       placeholder="Product name" maxlength="255"/>
+                                <div class="invalid-feedback" th:errors="*{name}"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Type <span class="text-danger">*</span></label>
+                                <select class="form-select" th:field="*{type}">
+                                    <option value="PRODUCT">Product</option>
+                                    <option value="SERVICE">Service</option>
+                                    <option value="CONSUMABLE">Consumable</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" th:field="*{categoryId}">
+                                    <option value="">— None —</option>
+                                    <option th:each="cat : ${categories}"
+                                            th:value="${cat.id}"
+                                            th:text="${cat.name}">Category</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Unit of Measure</label>
+                                <input type="text" class="form-control" th:field="*{unitOfMeasure}"
+                                       placeholder="e.g. kg, unit, hour" maxlength="50"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Barcode</label>
+                                <input type="text" class="form-control" th:field="*{barcode}"
+                                       placeholder="EAN / UPC" maxlength="100"/>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" th:field="*{description}" rows="3"
+                                          placeholder="Product description..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-transparent fw-semibold">
+                        <i class="bi bi-currency-euro me-2 text-primary"></i>Pricing
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Sale Price <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control"
+                                       th:field="*{salePrice}"
+                                       th:classappend="${#fields.hasErrors('salePrice')} ? 'is-invalid'"
+                                       step="0.01" min="0"/>
+                                <div class="invalid-feedback" th:errors="*{salePrice}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Purchase Price <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control"
+                                       th:field="*{purchasePrice}"
+                                       th:classappend="${#fields.hasErrors('purchasePrice')} ? 'is-invalid'"
+                                       step="0.01" min="0"/>
+                                <div class="invalid-feedback" th:errors="*{purchasePrice}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Currency <span class="text-danger">*</span></label>
+                                <select class="form-select" th:field="*{currencyCode}">
+                                    <option th:each="cur : ${currencies}"
+                                            th:value="${cur.code}"
+                                            th:text="${cur.code + ' - ' + cur.name}">EUR</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">VAT Rate <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control"
+                                           th:field="*{vatRate}"
+                                           th:classappend="${#fields.hasErrors('vatRate')} ? 'is-invalid'"
+                                           step="0.0001" min="0" max="1"/>
+                                    <span class="input-group-text">e.g. 0.20 = 20%</span>
+                                </div>
+                                <div class="invalid-feedback" th:errors="*{vatRate}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header bg-transparent fw-semibold">
+                        <i class="bi bi-sliders me-2 text-primary"></i>Options
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="chkSellable"
+                                           th:field="*{sellable}"/>
+                                    <label class="form-check-label" for="chkSellable">Sellable (can be used in sales)</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="chkPurchasable"
+                                           th:field="*{purchasable}"/>
+                                    <label class="form-check-label" for="chkPurchasable">Purchasable (can be used in purchases)</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="chkTrackStock"
+                                           th:field="*{trackStock}"/>
+                                    <label class="form-check-label" for="chkTrackStock">Track stock levels</label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="chkActive"
+                                           th:field="*{active}"/>
+                                    <label class="form-check-label" for="chkActive">Active</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Stock Alert Level</label>
+                                <input type="number" class="form-control" th:field="*{stockAlertLevel}"
+                                       step="0.01" min="0" placeholder="Minimum stock before alert"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent fw-semibold">
+                        <i class="bi bi-chat-text me-2 text-primary"></i>Notes
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control" th:field="*{notes}" rows="3"
+                                  placeholder="Internal notes..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>
+                    <span th:text="${productId != null} ? 'Update' : 'Create'">Save</span>
+                </button>
+                <a th:href="${productId != null} ? @{/products/{id}(id=${productId})} : @{/products}"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Cancel
+                </a>
+            </div>
+
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Proposals</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0"><i class="bi bi-file-earmark-text text-primary me-2"></i>Proposals</h4>
+            <small class="text-muted" th:text="${proposals.totalElements} + ' proposals'">0 proposals</small>
+        </div>
+        <a th:href="@{/proposals/new}" class="btn btn-primary" sec:authorize="hasAuthority('PROPOSAL_CREATE')">
+            <i class="bi bi-plus-lg me-1"></i>New Proposal
+        </a>
+    </div>
+
+    <!-- Search -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2">
+            <form th:action="@{/proposals}" method="get" class="d-flex gap-2 align-items-center flex-wrap">
+                <div class="input-group" style="max-width:400px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control"
+                           placeholder="Search reference, title, client..."
+                           th:value="${q}"/>
+                </div>
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+                <a th:href="@{/proposals}" class="btn btn-outline-secondary"
+                   th:if="${!#strings.isEmpty(q) or !#strings.isEmpty(status)}">Clear</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Status Tabs -->
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${#strings.isEmpty(status)} ? 'active' : ''"
+               th:href="@{/proposals(q=${q})}">All</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${status == 'DRAFT'} ? 'active' : ''"
+               th:href="@{/proposals(q=${q}, status='DRAFT')}">Draft</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${status == 'SENT'} ? 'active' : ''"
+               th:href="@{/proposals(q=${q}, status='SENT')}">Sent</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${status == 'ACCEPTED'} ? 'active' : ''"
+               th:href="@{/proposals(q=${q}, status='ACCEPTED')}">Accepted</a>
+        </li>
+    </ul>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Reference</th>
+                        <th>Title</th>
+                        <th>Client</th>
+                        <th>Date</th>
+                        <th>Valid Until</th>
+                        <th class="text-end">Total</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${proposals.isEmpty()}">
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            No proposals found.
+                        </td>
+                    </tr>
+                    <tr th:each="p : ${proposals}">
+                        <td>
+                            <a th:href="@{/proposals/{id}(id=${p.id})}"
+                               class="fw-semibold text-decoration-none" th:text="${p.reference}">PRO-00001</a>
+                        </td>
+                        <td th:text="${p.title ?: '—'}">—</td>
+                        <td th:text="${p.thirdParty.name}">Client</td>
+                        <td th:text="${#temporals.format(p.dateIssued, 'dd/MM/yyyy')}">01/01/2025</td>
+                        <td th:text="${p.dateValidUntil != null} ? ${#temporals.format(p.dateValidUntil, 'dd/MM/yyyy')} : '—'">—</td>
+                        <td class="text-end fw-semibold">
+                            <span th:text="${#numbers.formatDecimal(p.totalAmount, 1, 2)}">0.00</span>
+                            <small class="text-muted" th:text="${p.currencyCode}">EUR</small>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${p.statusBadgeClass}"
+                                  th:text="${p.status}">DRAFT</span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/proposals/{id}(id=${p.id})}"
+                               class="btn btn-sm btn-outline-secondary" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center"
+             th:if="${proposals.totalPages > 1}">
+            <small class="text-muted"
+                   th:text="'Page ' + (${proposals.number} + 1) + ' of ' + ${proposals.totalPages}"></small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${proposals.first} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/proposals(q=${q},status=${status},page=${proposals.number - 1})}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${proposals.last} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/proposals(q=${q},status=${status},page=${proposals.number + 1})}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

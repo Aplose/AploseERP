@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${invoiceId != null} ? 'Edit Invoice' : 'New Invoice'">Invoice Form</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/invoices}">Invoices</a></li>
+                <li class="breadcrumb-item active"
+                    th:text="${invoiceId != null} ? 'Edit' : 'New'">Form</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">
+            <i class="bi bi-receipt me-2 text-primary"></i>
+            <span th:text="${invoiceId != null} ? 'Edit Invoice' : 'New Invoice'">Invoice</span>
+        </h4>
+    </div>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <form th:action="${invoiceId != null} ? @{/invoices/{id}/edit(id=${invoiceId})} : @{/invoices/new}"
+          th:object="${invoice}" method="post" novalidate>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent fw-semibold">
+                        <i class="bi bi-info-circle me-2 text-primary"></i>Invoice Details
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Type <span class="text-danger">*</span></label>
+                                <select class="form-select" th:field="*{type}">
+                                    <option value="SALES">Sales Invoice</option>
+                                    <option value="PURCHASE">Purchase Invoice</option>
+                                    <option value="CREDIT_NOTE">Credit Note</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Client (Third Party ID) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control"
+                                       th:field="*{thirdPartyId}"
+                                       th:classappend="${#fields.hasErrors('thirdPartyId')} ? 'is-invalid'"
+                                       required/>
+                                <div class="invalid-feedback" th:errors="*{thirdPartyId}"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Contact ID</label>
+                                <input type="number" class="form-control" th:field="*{contactId}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Currency <span class="text-danger">*</span></label>
+                                <select class="form-select" th:field="*{currencyCode}">
+                                    <option th:each="cur : ${currencies}"
+                                            th:value="${cur.code}"
+                                            th:text="${cur.code + ' - ' + cur.name}">EUR</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Date Issued <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control"
+                                       th:field="*{dateIssued}" required/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Due Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control"
+                                       th:field="*{dateDue}" required/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Payment Method</label>
+                                <select class="form-select" th:field="*{paymentMethod}">
+                                    <option value="">— Select —</option>
+                                    <option value="BANK_TRANSFER">Bank Transfer</option>
+                                    <option value="CHECK">Check</option>
+                                    <option value="CASH">Cash</option>
+                                    <option value="CREDIT_CARD">Credit Card</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Bank Account</label>
+                                <input type="text" class="form-control" th:field="*{bankAccount}"
+                                       placeholder="IBAN / Account number" maxlength="100"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-control" th:field="*{notes}" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Terms &amp; Conditions</label>
+                                <textarea class="form-control" th:field="*{terms}" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>
+                    <span th:text="${invoiceId != null} ? 'Update' : 'Create'">Save</span>
+                </button>
+                <a th:href="${invoiceId != null} ? @{/invoices/{id}(id=${invoiceId})} : @{/invoices}"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i>Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>
