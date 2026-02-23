@@ -1,0 +1,17 @@
+# Test profile: in-memory H2, fresh DB on each run (Flyway applies migrations)
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=MySQL;DB_CLOSE_DELAY=-1;NON_KEYWORDS=USER
+    driver-class-name: org.h2.Driver
+    username: aploseErp
+    password: aploseErp
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    clean-disabled: false
+
+logging:
+  level:
+    fr.aplose.erp: INFO
+    org.springframework.security: WARN

@@ -1,8 +1,12 @@
 package fr.aplose.erp.modules.contact.service;
 
 import fr.aplose.erp.modules.contact.entity.Contact;
+import fr.aplose.erp.modules.contact.entity.ContactThirdPartyLink;
 import fr.aplose.erp.modules.contact.repository.ContactRepository;
+import fr.aplose.erp.modules.contact.repository.ContactThirdPartyLinkRepository;
 import fr.aplose.erp.modules.contact.web.dto.ContactDto;
+import fr.aplose.erp.modules.contact.web.dto.ContactThirdPartyLinkDto;
+import fr.aplose.erp.modules.thirdparty.entity.ThirdParty;
 import fr.aplose.erp.modules.thirdparty.repository.ThirdPartyRepository;
 import fr.aplose.erp.tenant.context.TenantContext;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ContactService {
 
     private final ContactRepository repo;
+    private final ContactThirdPartyLinkRepository linkRepository;
     private final ThirdPartyRepository thirdPartyRepository;
 
     @Transactional(readOnly = true)
@@ -30,7 +36,10 @@ public class ContactService {
 
     @Transactional(readOnly = true)
     public List<Contact> findByThirdParty(Long thirdPartyId) {
-        return repo.findByThirdPartyIdAndDeletedAtIsNull(thirdPartyId);
+        return linkRepository.findByThirdPartyId(thirdPartyId).stream()
+                .map(ContactThirdPartyLink::getContact)
+                .filter(c -> c.getDeletedAt() == null)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -62,6 +71,7 @@ public class ContactService {
     }
 
     private void applyDto(Contact c, ContactDto dto) {
+        c.setCivility(dto.getCivility());
         c.setFirstName(dto.getFirstName());
         c.setLastName(dto.getLastName());
         c.setJobTitle(dto.getJobTitle());
@@ -80,10 +90,22 @@ public class ContactService {
         c.setNotes(dto.getNotes());
         c.setPrimary(dto.isPrimary());
         c.setStatus(dto.getStatus() != null ? dto.getStatus() : "ACTIVE");
-        if (dto.getThirdPartyId() != null) {
-            thirdPartyRepository.findById(dto.getThirdPartyId()).ifPresent(c::setThirdParty);
-        } else {
-            c.setThirdParty(null);
+
+        String tid = TenantContext.getCurrentTenantId();
+        c.getThirdPartyLinks().clear();
+        if (dto.getLinks() != null) {
+            for (ContactThirdPartyLinkDto linkDto : dto.getLinks()) {
+                if (linkDto.getThirdPartyId() == null) continue;
+                thirdPartyRepository.findByIdAndTenantIdAndDeletedAtIsNull(linkDto.getThirdPartyId(), tid)
+                        .ifPresent(tp -> {
+                            ContactThirdPartyLink link = new ContactThirdPartyLink();
+                            link.setTenantId(tid);
+                            link.setContact(c);
+                            link.setThirdParty(tp);
+                            link.setLinkTypeCode(linkDto.getLinkTypeCode() != null ? linkDto.getLinkTypeCode() : "SALARIE");
+                            c.getThirdPartyLinks().add(link);
+                        });
+            }
         }
     }
 }

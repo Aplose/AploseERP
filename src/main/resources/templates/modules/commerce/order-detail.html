@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${order.reference}">Order Detail</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/orders}" th:text="#{nav.orders}">Orders</a></li>
+                <li class="breadcrumb-item active" th:text="${order.reference}">SO-00001</li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h4 class="mb-0">
+                    <i class="bi bi-cart3 me-2 text-primary"></i>
+                    <span th:text="${order.reference}">SO-00001</span>
+                    <span class="badge ms-2" th:classappend="${order.statusBadgeClass}" th:text="${order.status}">CONFIRMED</span>
+                </h4>
+                <small class="text-muted" th:if="${order.proposal != null}">
+                    <span th:text="#{order.fromProposal}">From proposal</span>: <a th:href="@{/proposals/{id}(id=${order.proposal.id})}" th:text="${order.proposal.reference}">PRO-00001</a>
+                </small>
+            </div>
+            <div class="d-flex gap-2" sec:authorize="hasAuthority('SALES_ORDER_UPDATE')">
+                <a th:href="@{/orders/{id}/edit(id=${order.id})}" class="btn btn-outline-primary"
+                   th:if="${order.status != 'CANCELLED' and order.status != 'DELIVERED'}">
+                    <i class="bi bi-pencil me-1"></i><span th:text="#{action.edit}">Edit</span>
+                </a>
+                <form th:action="@{/orders/{id}/status(id=${order.id})}" method="post" class="d-inline" th:if="${order.status == 'CONFIRMED'}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="status" value="PROCESSING"/>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-play me-1"></i><span th:text="#{status.PROCESSING}">Processing</span></button>
+                </form>
+                <form th:action="@{/orders/{id}/status(id=${order.id})}" method="post" class="d-inline" th:if="${order.status == 'PROCESSING'}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="status" value="SHIPPED"/>
+                    <button type="submit" class="btn btn-info text-white"><i class="bi bi-truck me-1"></i><span th:text="#{status.SHIPPED}">Shipped</span></button>
+                </form>
+                <form th:action="@{/orders/{id}/status(id=${order.id})}" method="post" class="d-inline" th:if="${order.status == 'SHIPPED'}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="status" value="DELIVERED"/>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i><span th:text="#{status.DELIVERED}">Delivered</span></button>
+                </form>
+                <form th:action="@{/orders/{id}/status(id=${order.id})}" method="post" class="d-inline"
+                      th:if="${order.status != 'CANCELLED' and order.status != 'DELIVERED'}"
+                      onsubmit="return confirm('Cancel this order?')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="status" value="CANCELLED"/>
+                    <button type="submit" class="btn btn-outline-danger"><i class="bi bi-x-lg me-1"></i><span th:text="#{status.CANCELLED}">Cancel</span></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent fw-semibold"><i class="bi bi-info-circle me-2 text-primary"></i><span th:text="#{order.details}">Details</span></div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td class="text-muted" th:text="#{proposal.label.client}">Client</td>
+                            <td><a th:href="@{/third-parties/{id}(id=${order.thirdParty.id})}" th:text="${order.thirdParty.name}">Client</a></td>
+                        </tr>
+                        <tr th:if="${order.contact != null}">
+                            <td class="text-muted" th:text="#{proposal.label.contact}">Contact</td>
+                            <td th:text="${order.contact.fullName}">Contact</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted" th:text="#{order.dateOrdered}">Date ordered</td>
+                            <td th:text="${#temporals.format(order.dateOrdered, 'dd/MM/yyyy')}">01/01/2025</td>
+                        </tr>
+                        <tr th:if="${order.dateExpected != null}">
+                            <td class="text-muted" th:text="#{order.expected}">Expected</td>
+                            <td th:text="${#temporals.format(order.dateExpected, 'dd/MM/yyyy')}">15/01/2025</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted" th:text="#{label.currency}">Currency</td>
+                            <td th:text="${order.currencyCode}">EUR</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent fw-semibold"><i class="bi bi-calculator me-2 text-primary"></i><span th:text="#{proposal.label.total}">Totals</span></div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td class="text-muted" th:text="#{order.subtotal}">Subtotal</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(order.subtotal, 1, 2)}">0.00</td>
+                        </tr>
+                        <tr th:if="${order.discountAmount != null and order.discountAmount.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                            <td class="text-muted" th:text="#{order.discount}">Discount</td>
+                            <td class="text-end text-danger" th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 1, 2)}">0.00</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">VAT</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(order.vatAmount, 1, 2)}">0.00</td>
+                        </tr>
+                        <tr class="table-active fw-bold">
+                            <td th:text="#{label.amount}">Total</td>
+                            <td class="text-end">
+                                <span th:text="${#numbers.formatDecimal(order.totalAmount, 1, 2)}">0.00</span>
+                                <small th:text="${order.currencyCode}">EUR</small>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent fw-semibold d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-list-ol me-2 text-primary"></i><span th:text="#{proposal.label.lines}">Lines</span></span>
+                    <span class="badge bg-primary" th:text="${order.lines.size()} + ' lines'">0 lines</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th th:text="#{product.label.name}">Description</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end" th:text="#{product.label.salePrice}">Unit Price</th>
+                            <th class="text-end">Disc.%</th>
+                            <th class="text-end">VAT</th>
+                            <th class="text-end" th:text="#{label.amount}">Total</th>
+                            <th class="text-end" th:if="${order.status != 'CANCELLED' and order.status != 'DELIVERED'}" th:text="#{label.actions}">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${order.lines.isEmpty()}">
+                            <td th:colspan="${order.status != 'CANCELLED' and order.status != 'DELIVERED'} ? 8 : 7" class="text-center text-muted py-4"><span th:text="#{order.noLines}">No lines yet</span></td>
+                        </tr>
+                        <tr th:each="line, iter : ${order.lines}">
+                            <td th:text="${iter.index + 1}">1</td>
+                            <td th:text="${line.description}">Description</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(line.quantity, 1, 2)}">1.00</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(line.unitPrice, 1, 2)}">0.00</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(line.discountPct != null ? line.discountPct * 100 : 0, 1, 1)} + '%'">0%</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(line.vatRate != null ? line.vatRate * 100 : 0, 1, 1)} + '%'">0%</td>
+                            <td class="text-end fw-semibold" th:text="${#numbers.formatDecimal(line.lineTotal, 1, 2)}">0.00</td>
+                            <td class="text-end" th:if="${order.status != 'CANCELLED' and order.status != 'DELIVERED'}">
+                                <form th:action="@{/orders/{pid}/lines/{lid}/delete(pid=${order.id},lid=${line.id})}" method="post" class="d-inline" onsubmit="return confirm('Remove this line?')">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-light" th:if="${order.status != 'CANCELLED' and order.status != 'DELIVERED'}">
+                    <form th:action="@{/orders/{id}/lines(id=${order.id})}" th:object="${newLine}" method="post" class="row g-2 align-items-end">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="col-md-4">
+                            <label class="form-label small" th:text="#{product.label.name}">Description</label>
+                            <input type="text" class="form-control form-control-sm" th:field="*{description}" required/>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label small">Qty</label>
+                            <input type="number" class="form-control form-control-sm" th:field="*{quantity}" step="0.01" min="0.0001" required/>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small" th:text="#{product.label.salePrice}">Unit Price</label>
+                            <input type="number" class="form-control form-control-sm" th:field="*{unitPrice}" step="0.01" min="0" required/>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label small">Disc.%</label>
+                            <input type="number" class="form-control form-control-sm" th:field="*{discountPct}" step="0.01" min="0" max="1"/>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label small">VAT</label>
+                            <input type="number" class="form-control form-control-sm" th:field="*{vatRate}" step="0.01" min="0" max="1"/>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-sm btn-primary w-100"><i class="bi bi-plus-lg me-1"></i><span th:text="#{order.addLine}">Add Line</span></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12" th:if="${order.notes != null or order.terms != null}">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6" th:if="${order.notes != null}">
+                            <h6 class="text-muted" th:text="#{label.notes}">Notes</h6>
+                            <p th:text="${order.notes}" class="mb-0"></p>
+                        </div>
+                        <div class="col-md-6" th:if="${order.terms != null}">
+                            <h6 class="text-muted">Terms</h6>
+                            <p th:text="${order.terms}" class="mb-0"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

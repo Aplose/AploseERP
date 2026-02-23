@@ -75,6 +75,9 @@ public class Tenant {
     @Column(name = "plan", length = 50, nullable = false)
     private String plan = "trial";
 
+    @Column(name = "registration_id", length = 100)
+    private String registrationId;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

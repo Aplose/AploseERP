@@ -1,13 +1,14 @@
 package fr.aplose.erp.modules.contact.entity;
 
 import fr.aplose.erp.core.entity.BaseEntity;
-import fr.aplose.erp.modules.thirdparty.entity.ThirdParty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "contacts")
@@ -16,9 +17,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Contact extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "third_party_id")
-    private ThirdParty thirdParty;
+    @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ContactThirdPartyLink> thirdPartyLinks = new ArrayList<>();
+
+    @Column(name = "civility", length = 10)
+    private String civility;
 
     @Column(name = "first_name", length = 100, nullable = false)
     private String firstName;
@@ -41,7 +44,7 @@ public class Contact extends BaseEntity {
     @Column(name = "phone", length = 50)
     private String phone;
 
-    @Column(name = "phone_mobile", length = 50)
+    @Column(name = "mobile", length = 50)
     private String phoneMobile;
 
     @Column(name = "fax", length = 50)

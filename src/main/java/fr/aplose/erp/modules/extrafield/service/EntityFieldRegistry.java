@@ -1,5 +1,8 @@
 package fr.aplose.erp.modules.extrafield.service;
 
+import fr.aplose.erp.core.businessobject.BusinessObjectRegistry;
+
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,13 +15,8 @@ public final class EntityFieldRegistry {
 
     public record EntityMeta(String code, String label, String icon) {}
 
-    public static final List<EntityMeta> ENTITY_TYPES = List.of(
-            new EntityMeta("THIRD_PARTY", "Third Parties", "bi-building"),
-            new EntityMeta("CONTACT", "Contacts", "bi-person-lines-fill"),
-            new EntityMeta("PRODUCT", "Products", "bi-box-seam"),
-            new EntityMeta("PROPOSAL", "Proposals", "bi-file-earmark-text"),
-            new EntityMeta("INVOICE", "Invoices", "bi-receipt")
-    );
+    /** Entity types that support extra fields: from business object registry (core). Custom types added in phase 3. */
+    public static final List<EntityMeta> ENTITY_TYPES = new ArrayList<>();
 
     public static final Map<String, List<FieldMeta>> FIELDS = new LinkedHashMap<>();
 
@@ -119,6 +117,12 @@ public final class EntityFieldRegistry {
                 new FieldMeta("terms", "Terms", false),
                 new FieldMeta("status", "Status", true)
         ));
+
+        for (BusinessObjectRegistry.CoreType t : BusinessObjectRegistry.CoreType.values()) {
+            if (FIELDS.containsKey(t.getCode())) {
+                ENTITY_TYPES.add(new EntityMeta(t.getCode(), t.getLabelKey(), t.getIcon()));
+            }
+        }
     }
 
     public static List<FieldMeta> getFields(String entityType) {

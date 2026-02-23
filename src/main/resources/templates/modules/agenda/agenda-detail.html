@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${event.title}">Event</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/agenda}" th:text="#{nav.agenda}">Agenda</a></li>
+                <li class="breadcrumb-item active" th:text="${event.title}">Event</li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center justify-content-between">
+            <h4 class="mb-0"><i class="bi bi-calendar-event me-2 text-primary"></i><span th:text="${event.title}">Event</span></h4>
+            <div class="d-flex gap-2" sec:authorize="hasAuthority('AGENDA_UPDATE')">
+                <a th:href="@{/agenda/{id}/edit(id=${event.id})}" class="btn btn-outline-primary"><i class="bi bi-pencil me-1"></i><span th:text="#{action.edit}">Edit</span></a>
+                <form th:action="@{/agenda/{id}/delete(id=${event.id})}" method="post" class="d-inline" onsubmit="return confirm('Delete this event?')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-outline-danger" sec:authorize="hasAuthority('AGENDA_DELETE')"><i class="bi bi-trash me-1"></i><span th:text="#{action.delete}">Delete</span></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent fw-semibold" th:text="#{order.details}">Details</div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td class="text-muted" th:text="#{label.date}">Start</td>
+                            <td th:text="${#temporals.format(event.startDatetime, 'dd/MM/yyyy HH:mm')}">—</td>
+                        </tr>
+                        <tr th:if="${event.endDatetime != null}">
+                            <td class="text-muted">End</td>
+                            <td th:text="${#temporals.format(event.endDatetime, 'dd/MM/yyyy HH:mm')}">—</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted" th:text="#{agenda.type}">Type</td>
+                            <td th:text="${event.type}">MEETING</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted" th:text="#{label.status}">Status</td>
+                            <td th:text="${event.status}">PLANNED</td>
+                        </tr>
+                        <tr th:if="${event.location != null}">
+                            <td class="text-muted" th:text="#{agenda.location}">Location</td>
+                            <td th:text="${event.location}">—</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Organizer</td>
+                            <td th:text="${event.organizer.displayName}">—</td>
+                        </tr>
+                        <tr th:if="${event.thirdParty != null}">
+                            <td class="text-muted" th:text="#{project.client}">Client</td>
+                            <td><a th:href="@{/third-parties/{id}(id=${event.thirdParty.id})}" th:text="${event.thirdParty.name}">—</a></td>
+                        </tr>
+                        <tr th:if="${event.project != null}">
+                            <td class="text-muted" th:text="#{nav.projects}">Project</td>
+                            <td><a th:href="@{/projects/{id}(id=${event.project.id})}" th:text="${event.project.name}">—</a></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6" th:if="${event.description != null}">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent fw-semibold" th:text="#{project.description}">Description</div>
+                <div class="card-body">
+                    <p th:text="${event.description}" class="mb-0"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

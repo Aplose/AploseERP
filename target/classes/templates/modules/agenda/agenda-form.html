@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${eventId != null} ? 'Edit Event' : 'New Event'">Event</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/agenda}" th:text="#{nav.agenda}">Agenda</a></li>
+                <li class="breadcrumb-item active" th:text="${eventId != null} ? 'Edit' : 'New'">Form</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0"><i class="bi bi-calendar-plus me-2 text-primary"></i><span th:text="${eventId != null} ? 'Edit Event' : 'New Event'">Event</span></h4>
+    </div>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <form th:action="${eventId != null} ? @{/agenda/{id}/edit(id=${eventId})} : @{/agenda/new}" th:object="${event}" method="post" novalidate>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold" th:text="#{agenda.title}">Title</label>
+                                <span class="text-danger">*</span>
+                                <input type="text" class="form-control" th:field="*{title}" th:classappend="${#fields.hasErrors('title')} ? 'is-invalid'" required/>
+                                <div class="invalid-feedback" th:errors="*{title}"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{agenda.type}">Type</label>
+                                <select class="form-select" th:field="*{type}">
+                                    <option value="MEETING">Meeting</option>
+                                    <option value="CALL">Call</option>
+                                    <option value="TASK">Task</option>
+                                    <option value="REMINDER">Reminder</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{label.date}">Start</label>
+                                <span class="text-danger">*</span>
+                                <input type="datetime-local" class="form-control" th:field="*{startDatetime}" required/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">End</label>
+                                <input type="datetime-local" class="form-control" th:field="*{endDatetime}"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">All day</label>
+                                <div class="form-check mt-2">
+                                    <input type="checkbox" class="form-check-input" th:field="*{allDay}"/>
+                                    <label class="form-check-label">All day event</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" th:text="#{project.description}">Description</label>
+                                <textarea class="form-control" th:field="*{description}" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="#{agenda.location}">Location</label>
+                                <input type="text" class="form-control" th:field="*{location}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{project.client}">Third Party ID</label>
+                                <input type="number" class="form-control" th:field="*{thirdPartyId}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Contact ID</label>
+                                <input type="number" class="form-control" th:field="*{contactId}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{nav.projects}">Project ID</label>
+                                <input type="number" class="form-control" th:field="*{projectId}"/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Color</label>
+                                <input type="color" class="form-control form-control-color" th:field="*{color}" th:value="${event.color != null} ? ${event.color} : '#0d6efd'"/>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4">
+                                    <input type="checkbox" class="form-check-input" th:field="*{privacy}"/>
+                                    <label class="form-check-label">Private</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i><span th:text="#{action.save}">Save</span></button>
+                <a th:href="${eventId != null} ? @{/agenda/{id}(id=${eventId})} : @{/agenda}" class="btn btn-outline-secondary" th:text="#{action.cancel}">Cancel</a>
+            </div>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

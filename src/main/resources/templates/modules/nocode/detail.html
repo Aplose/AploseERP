@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="${definition.name}">Detail</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0"><span th:text="${definition.name}">Name</span> #<span th:text="${data.id}">ID</span></h4>
+        </div>
+        <div>
+            <a th:if="${#authorization.expression('hasAuthority(''CUSTOM_ENTITY_UPDATE'')')}"
+               th:href="@{/app/{mc}/{oc}/{id}/edit(mc=${moduleCode}, oc=${objectCode}, id=${data.id})}" class="btn btn-primary" th:text="#{action.edit}">Edit</a>
+            <form th:if="${#authorization.expression('hasAuthority(''CUSTOM_ENTITY_DELETE'')')}" th:action="@{/app/{mc}/{oc}/{id}/delete(mc=${moduleCode}, oc=${objectCode}, id=${data.id})}" method="post" class="d-inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn btn-outline-danger" th:text="#{action.delete}">Delete</button>
+            </form>
+        </div>
+    </div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <th:block th:each="entry : ${payload}">
+                    <dt class="col-sm-3 text-muted" th:text="${entry.key}">Key</dt>
+                    <dd class="col-sm-9" th:text="${entry.value}">Value</dd>
+                </th:block>
+            </dl>
+        </div>
+    </div>
+    <a th:href="@{/app/{mc}/{oc}(mc=${moduleCode}, oc=${objectCode})}" class="btn btn-outline-secondary mt-3" th:text="#{action.back}">Back</a>
+</div>
+</body>
+</html>

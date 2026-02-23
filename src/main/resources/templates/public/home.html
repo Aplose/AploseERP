@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="#{landing.title}">AploseERP - ERP Open Source</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+    <style>
+        .hero { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); min-height: 60vh; }
+        .cta-btn { padding: 0.75rem 1.5rem; font-weight: 600; }
+        .plan-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .plan-card:hover { transform: translateY(-4px); box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15); }
+        .plan-card.discovery { border: 2px solid #198754; }
+        .opensource-section { background: var(--bs-light); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                <span th:text="#{app.name}">AploseERP</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPublic">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarPublic">
+                <div class="navbar-nav ms-auto align-items-center">
+                    <a class="nav-link" th:href="@{/tarifs}" th:text="#{landing.pricing}">Tarifs</a>
+                    <a class="nav-link" th:href="@{/signup}" th:text="#{landing.signup}">S'inscrire</a>
+                    <a class="nav-link btn btn-outline-light btn-sm ms-2" th:href="@{/login}" th:text="#{landing.login}">Se connecter</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero text-white d-flex align-items-center">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-4" th:text="#{landing.hero.title}">L'ERP open source pour votre entreprise</h1>
+            <p class="lead mb-4" th:text="#{landing.hero.subtitle}">Gérez vos tiers, devis, commandes, factures et projets dans un seul outil. Simple, modulable et sans engagement.</p>
+            <div class="d-flex gap-3 justify-content-center flex-wrap">
+                <a th:href="@{/signup}" class="btn btn-light cta-btn" th:text="#{landing.cta.signup}">Créer un compte</a>
+                <a th:href="@{/#plans}" class="btn btn-outline-light cta-btn" th:text="#{landing.cta.pricing}">Voir les formules</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="plans" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5" th:text="#{landing.plans.title}">Choisissez votre formule</h2>
+            <div class="row g-4 justify-content-center">
+                <th:block th:each="plan : ${plans}">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 plan-card border shadow-sm" th:classappend="${plan.name == 'DISCOVERY'} ? 'discovery' : ''">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0" th:text="#{pricing.plan.__${plan.name}__}">Plan</h5>
+                                    <span th:if="${plan.free}" class="badge bg-success" th:text="#{pricing.freeForever}">Gratuit à vie</span>
+                                </div>
+                                <div class="my-3">
+                                    <span class="display-5 fw-bold" th:if="${plan.free}" th:text="#{pricing.free}">Gratuit</span>
+                                    <th:block th:unless="${plan.free}">
+                                        <span class="display-5 fw-bold" th:text="${plan.pricePerUserPerMonthEur}">9</span>
+                                        <span th:text="#{pricing.perUserPerMonth}">€ / utilisateur / mois</span>
+                                    </th:block>
+                                </div>
+                                <p class="text-muted small mb-3">
+                                    <span th:if="${plan.maxUsers == -1}" th:text="#{pricing.users.unlimited}">Utilisateurs illimités</span>
+                                    <span th:unless="${plan.maxUsers == -1}" th:text="#{pricing.users.max(plan.maxUsers)}">Jusqu'à {0} utilisateur(s)</span>
+                                </p>
+                                <ul class="list-unstyled small flex-grow-1" th:with="featuresStr=#{${plan.featuresMessageKey}}">
+                                    <li th:each="item : ${#strings.arraySplit(featuresStr, '|')}"><i class="bi bi-check text-success me-2"></i><span th:text="${#strings.trim(item)}">Feature</span></li>
+                                </ul>
+                                <a th:href="@{/signup(plan=${plan.code})}" class="btn mt-3" th:classappend="${(plan.name == 'DISCOVERY') ? 'btn-success' : ((plan.name == 'PREMIUM') ? 'btn-primary' : 'btn-outline-primary')}" th:text="#{pricing.choose}">Choisir</a>
+                            </div>
+                        </div>
+                    </div>
+                </th:block>
+            </div>
+        </div>
+    </section>
+
+    <section class="opensource-section py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h2 class="mb-3" th:text="#{landing.opensource}">Open Source</h2>
+                    <p class="lead text-muted mb-4" th:text="#{landing.opensource.desc}">AploseERP est un ERP open source : le code source est libre et consultable. Contribuez ou déployez en toute transparence.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <a href="https://github.com/Aplose/AploseERP" target="_blank" rel="noopener noreferrer" class="btn btn-dark btn-lg">
+                        <i class="bi bi-github me-2"></i>
+                        <span th:text="#{landing.github}">Voir sur GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4 text-center">
+                    <i class="bi bi-building text-primary" style="font-size: 2.5rem;"></i>
+                    <h5 class="mt-2" th:text="#{landing.features.crm}">CRM & Tiers</h5>
+                    <p class="text-muted small" th:text="#{landing.features.crm.desc}">Tiers, contacts, devis et commandes au même endroit.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="bi bi-receipt text-primary" style="font-size: 2.5rem;"></i>
+                    <h5 class="mt-2" th:text="#{landing.features.invoicing}">Facturation</h5>
+                    <p class="text-muted small" th:text="#{landing.features.invoicing.desc}">Devis, commandes, factures et suivi des paiements.</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="bi bi-kanban text-primary" style="font-size: 2.5rem;"></i>
+                    <h5 class="mt-2" th:text="#{landing.features.projects}">Projets & Agenda</h5>
+                    <p class="text-muted small" th:text="#{landing.features.projects.desc}">Projets, tâches et calendrier partagé.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <span th:text="#{app.name}">AploseERP</span> — <span th:text="#{landing.footer}">Open Source ERP</span>
+                    &copy; <span th:text="${#temporals.createNow().year}">2026</span>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+                    <a href="https://github.com/Aplose/AploseERP" target="_blank" rel="noopener noreferrer" class="text-white text-decoration-none">
+                        <i class="bi bi-github me-1"></i><span th:text="#{landing.github.code}">Code source</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

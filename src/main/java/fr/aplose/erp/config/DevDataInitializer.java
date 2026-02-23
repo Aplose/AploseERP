@@ -1,7 +1,6 @@
 package fr.aplose.erp.config;
 
 import fr.aplose.erp.security.repository.UserRepository;
-import fr.aplose.erp.tenant.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;

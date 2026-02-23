@@ -1,5 +1,6 @@
 package fr.aplose.erp.modules.commerce.entity;
 
+import fr.aplose.erp.core.businessobject.BusinessObject;
 import fr.aplose.erp.core.entity.BaseEntity;
 import fr.aplose.erp.modules.contact.entity.Contact;
 import fr.aplose.erp.modules.thirdparty.entity.ThirdParty;
@@ -19,7 +20,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Invoice extends BaseEntity {
+public class Invoice extends BaseEntity implements BusinessObject {
 
     @Column(name = "reference", length = 50, nullable = false)
     private String reference;
@@ -130,5 +131,10 @@ public class Invoice extends BaseEntity {
             case "CANCELLED" -> "bg-dark";
             default -> "bg-secondary";
         };
+    }
+
+    @Override
+    public String getBusinessObjectTypeCode() {
+        return "INVOICE";
     }
 }

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${projectId != null} ? 'Edit Project' : 'New Project'">Project</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/projects}" th:text="#{nav.projects}">Projects</a></li>
+                <li class="breadcrumb-item active" th:text="${projectId != null} ? 'Edit' : 'New'">Form</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">
+            <i class="bi bi-kanban me-2 text-primary"></i>
+            <span th:text="${projectId != null} ? 'Edit Project' : 'New Project'">Project</span>
+        </h4>
+    </div>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <form th:action="${projectId != null} ? @{/projects/{id}/edit(id=${projectId})} : @{/projects/new}" th:object="${project}" method="post" novalidate>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent fw-semibold" th:text="#{order.details}">Details</div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold" th:text="#{label.code}">Code</label>
+                                <span class="text-danger">*</span>
+                                <input type="text" class="form-control font-monospace text-uppercase" th:field="*{code}"
+                                       th:classappend="${#fields.hasErrors('code')} ? 'is-invalid'" required/>
+                                <div class="invalid-feedback" th:errors="*{code}"></div>
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold" th:text="#{label.name}">Name</label>
+                                <span class="text-danger">*</span>
+                                <input type="text" class="form-control" th:field="*{name}"
+                                       th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'" required/>
+                                <div class="invalid-feedback" th:errors="*{name}"></div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" th:text="#{project.description}">Description</label>
+                                <textarea class="form-control" th:field="*{description}" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{project.client}">Client (Third Party ID)</label>
+                                <input type="number" class="form-control" th:field="*{thirdPartyId}"/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label" th:text="#{label.status}">Status</label>
+                                <select class="form-select" th:field="*{status}">
+                                    <option value="PLANNING">Planning</option>
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="ON_HOLD">On Hold</option>
+                                    <option value="COMPLETED">Completed</option>
+                                    <option value="CANCELLED">Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" th:field="*{priority}">
+                                    <option value="LOW">Low</option>
+                                    <option value="MEDIUM">Medium</option>
+                                    <option value="HIGH">High</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label" th:text="#{project.dateStart}">Start date</label>
+                                <input type="date" class="form-control" th:field="*{dateStart}"/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label" th:text="#{project.dateEnd}">End date</label>
+                                <input type="date" class="form-control" th:field="*{dateEnd}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Budget</label>
+                                <input type="number" class="form-control" th:field="*{budgetAmount}" step="0.01" min="0"/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label" th:text="#{label.currency}">Currency</label>
+                                <select class="form-select" th:field="*{currencyCode}">
+                                    <option value="">—</option>
+                                    <option th:each="c : ${currencies}" th:value="${c.code}" th:text="${c.code + ' - ' + c.label}">EUR</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Manager (User ID)</label>
+                                <input type="number" class="form-control" th:field="*{managerId}"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Billing mode</label>
+                                <select class="form-select" th:field="*{billingMode}">
+                                    <option value="FIXED">Fixed</option>
+                                    <option value="TIME_AND_MATERIALS">Time &amp; Materials</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" th:text="#{label.notes}">Notes</label>
+                                <textarea class="form-control" th:field="*{notes}" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i><span th:text="#{action.save}">Save</span></button>
+                <a th:href="${projectId != null} ? @{/projects/{id}(id=${projectId})} : @{/projects}" class="btn btn-outline-secondary" th:text="#{action.cancel}">Cancel</a>
+            </div>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

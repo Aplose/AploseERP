@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="#{emailtemplate.title}">Modèles d'email</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex align-items-center mb-4">
+        <i class="bi bi-envelope text-primary me-3" style="font-size: 1.8rem;"></i>
+        <div>
+            <h4 class="mb-0" th:text="#{emailtemplate.title}">Modèles d'email</h4>
+            <small class="text-muted" th:text="#{emailtemplate.subtitle}">Bienvenue et onboarding</small>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover mb-0">
+                <thead>
+                <tr>
+                    <th th:text="#{emailtemplate.key}">Clé</th>
+                    <th th:text="#{emailtemplate.locale}">Langue</th>
+                    <th th:text="#{emailtemplate.subject}">Sujet</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="t : ${templates}">
+                    <td th:text="${t.templateKey}">welcome</td>
+                    <td th:text="${t.locale}">fr</td>
+                    <td th:text="${t.subject}">Sujet</td>
+                    <td>
+                        <a th:href="@{/admin/email-templates/{id}/edit(id=${t.id})}" class="btn btn-sm btn-outline-primary" th:text="#{emailtemplate.edit}">Modifier</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

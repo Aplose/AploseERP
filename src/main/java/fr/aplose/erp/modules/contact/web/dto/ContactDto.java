@@ -6,11 +6,17 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 public class ContactDto {
 
-    private Long thirdPartyId;
+    private List<ContactThirdPartyLinkDto> links = new ArrayList<>();
+
+    @Size(max = 10)
+    private String civility;
 
     @NotBlank
     @Size(max = 100)

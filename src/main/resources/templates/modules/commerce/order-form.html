@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${orderId != null} ? 'Edit Order' : 'New Order'">Order Form</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/orders}" th:text="#{nav.orders}">Orders</a></li>
+                <li class="breadcrumb-item active" th:text="${orderId != null} ? 'Edit' : 'New'">Form</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">
+            <i class="bi bi-cart3 me-2 text-primary"></i>
+            <span th:text="${orderId != null} ? 'Edit Order' : 'New Order'">Order</span>
+        </h4>
+    </div>
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <form th:action="${orderId != null} ? @{/orders/{id}/edit(id=${orderId})} : @{/orders/new}"
+          th:object="${order}" method="post" novalidate>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent fw-semibold" th:text="#{order.details}">Order Details</div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold" th:text="#{proposal.label.client}">Client (Third Party ID)</label>
+                                <span class="text-danger">*</span>
+                                <input type="number" class="form-control" th:field="*{thirdPartyId}"
+                                       th:classappend="${#fields.hasErrors('thirdPartyId')} ? 'is-invalid'" required/>
+                                <div class="invalid-feedback" th:errors="*{thirdPartyId}"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{order.contact}">Contact ID</label>
+                                <input type="number" class="form-control" th:field="*{contactId}"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{order.proposalId}">Proposal ID (optional)</label>
+                                <input type="number" class="form-control" th:field="*{proposalId}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold" th:text="#{order.dateOrdered}">Date ordered</label>
+                                <span class="text-danger">*</span>
+                                <input type="date" class="form-control" th:field="*{dateOrdered}" required/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{order.expected}">Expected date</label>
+                                <input type="date" class="form-control" th:field="*{dateExpected}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold" th:text="#{label.currency}">Currency</label>
+                                <select class="form-select" th:field="*{currencyCode}">
+                                    <option th:each="cur : ${currencies}" th:value="${cur.code}"
+                                            th:text="${cur.code + ' - ' + cur.label}">EUR</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{order.discount}">Discount</label>
+                                <input type="number" class="form-control" th:field="*{discountAmount}" step="0.01" min="0"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="#{label.notes}">Notes</label>
+                                <textarea class="form-control" th:field="*{notes}" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Terms &amp; Conditions</label>
+                                <textarea class="form-control" th:field="*{terms}" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>
+                    <span th:text="${orderId != null} ? 'Update' : 'Create'">Save</span>
+                </button>
+                <a th:href="${orderId != null} ? @{/orders/{id}(id=${orderId})} : @{/orders}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg me-1"></i><span th:text="#{action.cancel}">Cancel</span>
+                </a>
+            </div>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

@@ -10,6 +10,7 @@ import fr.aplose.erp.security.web.dto.UserEditDto;
 import fr.aplose.erp.tenant.context.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,11 @@ public class UserService {
     public User findById(Long id) {
         return userRepository.findByIdAndTenantId(id, TenantContext.getCurrentTenantId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<User> findAllForDropdown() {
+        return userRepository.findByTenantIdAndDeletedAtIsNull(TenantContext.getCurrentTenantId(), PageRequest.of(0, 500)).getContent();
     }
 
     @Transactional
@@ -93,6 +99,18 @@ public class UserService {
         user.setTenantAdmin(dto.isTenantAdmin());
         user.setRoles(resolveRoles(dto.getRoleIds(), tenantId));
 
+        User manager = null;
+        if (dto.getManagerId() != null && !dto.getManagerId().equals(id)) {
+            manager = userRepository.findByIdAndTenantId(dto.getManagerId(), tenantId).orElse(null);
+        }
+        user.setManager(manager);
+
+        User leaveValidator = null;
+        if (dto.getLeaveValidatorId() != null && !dto.getLeaveValidatorId().equals(id)) {
+            leaveValidator = userRepository.findByIdAndTenantId(dto.getLeaveValidatorId(), tenantId).orElse(null);
+        }
+        user.setLeaveValidator(leaveValidator);
+
         return userRepository.save(user);
     }
 
@@ -103,6 +121,23 @@ public class UserService {
         }
         User user = findById(id);
         user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
+        user.setPasswordChangedAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+    /**
+     * Change password for the current user (self-service). Verifies current password.
+     */
+    @Transactional
+    public void changeOwnPassword(Long userId, String currentPassword, String newPassword) {
+        User user = findById(userId);
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new IllegalArgumentException("New password must be at least 8 characters");
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setPasswordChangedAt(LocalDateTime.now());
         userRepository.save(user);
     }

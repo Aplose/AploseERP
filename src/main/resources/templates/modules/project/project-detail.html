@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${project.name}">Project</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/projects}" th:text="#{nav.projects}">Projects</a></li>
+                <li class="breadcrumb-item active" th:text="${project.code}">PRJ-001</li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h4 class="mb-0">
+                    <i class="bi bi-kanban me-2 text-primary"></i>
+                    <span th:text="${project.name}">Project</span>
+                    <span class="badge ms-2" th:classappend="${project.statusBadgeClass}" th:text="${project.status}">PLANNING</span>
+                </h4>
+                <small class="text-muted" th:text="${project.code}">PRJ-001</small>
+            </div>
+            <a th:href="@{/projects/{id}/edit(id=${project.id})}" class="btn btn-outline-primary" sec:authorize="hasAuthority('PROJECT_UPDATE')">
+                <i class="bi bi-pencil me-1"></i><span th:text="#{action.edit}">Edit</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent fw-semibold" th:text="#{order.details}">Details</div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr th:if="${project.description != null}">
+                            <td class="text-muted">Description</td>
+                            <td th:text="${project.description}">—</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted" th:text="#{project.client}">Client</td>
+                            <td th:if="${project.thirdParty != null}"><a th:href="@{/third-parties/{id}(id=${project.thirdParty.id})}" th:text="${project.thirdParty.name}">—</a></td>
+                            <td th:if="${project.thirdParty == null}">—</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Priority</td>
+                            <td th:text="${project.priority}">MEDIUM</td>
+                        </tr>
+                        <tr th:if="${project.dateStart != null or project.dateEnd != null}">
+                            <td class="text-muted" th:text="#{project.dates}">Dates</td>
+                            <td>
+                                <span th:if="${project.dateStart != null}" th:text="${#temporals.format(project.dateStart, 'dd/MM/yyyy')}">—</span>
+                                <span th:if="${project.dateStart != null and project.dateEnd != null}"> – </span>
+                                <span th:if="${project.dateEnd != null}" th:text="${#temporals.format(project.dateEnd, 'dd/MM/yyyy')}">—</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${project.budgetAmount != null}">
+                            <td class="text-muted">Budget</td>
+                            <td th:text="${#numbers.formatDecimal(project.budgetAmount, 1, 2)} + ' ' + (${project.currencyCode} != null ? ${project.currencyCode} : '')">—</td>
+                        </tr>
+                        <tr th:if="${project.manager != null}">
+                            <td class="text-muted">Manager</td>
+                            <td th:text="${project.manager.displayName}">—</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent fw-semibold" th:text="#{project.tasks}">Tasks</div>
+                <div class="card-body">
+                    <p th:if="${project.tasks.isEmpty()}" class="text-muted mb-0" th:text="#{project.noTasks}">No tasks yet.</p>
+                    <ul class="list-group list-group-flush" th:unless="${project.tasks.isEmpty()}">
+                        <li class="list-group-item px-0 d-flex justify-content-between align-items-center" th:each="t : ${project.tasks}">
+                            <span th:text="${t.title}">Task</span>
+                            <span class="badge" th:classappend="${t.status == 'DONE'} ? 'bg-success' : 'bg-secondary'" th:text="${t.status}">TODO</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-12" th:if="${project.notes != null}">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted" th:text="#{label.notes}">Notes</h6>
+                    <p th:text="${project.notes}" class="mb-0"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

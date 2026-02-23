@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="#{module.admin.title}">Modules</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center mb-4">
+        <i class="bi bi-puzzle text-primary me-3" style="font-size: 1.8rem;"></i>
+        <div>
+            <h4 class="mb-0" th:text="#{module.admin.title}">Modules</h4>
+            <small class="text-muted" th:text="#{module.admin.subtitle}">Enable or disable features for this tenant</small>
+        </div>
+    </div>
+
+    <form th:action="@{/admin/modules}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <p class="text-muted small" th:text="#{module.admin.help}">Disabled modules are hidden from the menu and their URLs are not accessible.</p>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th th:text="#{module.admin.module}">Module</th>
+                            <th th:text="#{module.admin.enabled}">Enabled</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="m : ${modules}">
+                            <td>
+                                <i class="bi me-2" th:classappend="${m.icon}"></i>
+                                <span th:text="#{__${m.labelKey}__}">Label</span>
+                            </td>
+                            <td>
+                                <div class="form-check form-switch" sec:authorize="hasAuthority('TENANT_UPDATE')">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                           th:id="${'mod-' + m.code}"
+                                           name="enabled"
+                                           th:value="${m.code}"
+                                           th:checked="${enabledCodes != null and enabledCodes.contains(m.code)}"/>
+                                    <label class="form-check-label" th:for="${'mod-' + m.code}"></label>
+                                </div>
+                                <span sec:authorize="!hasAuthority('TENANT_UPDATE')">
+                                    <span th:if="${enabledCodes != null and enabledCodes.contains(m.code)}" th:text="#{common.yes}">Yes</span>
+                                    <span th:unless="${enabledCodes != null and enabledCodes.contains(m.code)}" th:text="#{common.no}">No</span>
+                                </span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div sec:authorize="hasAuthority('TENANT_UPDATE')">
+                    <button type="submit" class="btn btn-primary" th:text="#{action.save}">Save</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

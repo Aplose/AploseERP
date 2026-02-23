@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="#{nav.agenda}">Agenda</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0"><i class="bi bi-calendar3 text-primary me-2"></i><span th:text="#{nav.agenda}">Agenda</span></h4>
+            <small class="text-muted" th:text="${events.totalElements} + ' events'">0 events</small>
+        </div>
+        <a th:href="@{/agenda/new}" class="btn btn-primary" sec:authorize="hasAuthority('AGENDA_CREATE')">
+            <i class="bi bi-plus-lg me-1"></i><span th:text="#{agenda.newEvent}">New Event</span>
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2">
+            <form th:action="@{/agenda}" method="get" class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <label class="form-label small mb-0">From</label>
+                    <input type="date" name="from" class="form-control form-control-sm" th:value="${#temporals.format(from, 'yyyy-MM-dd')}"/>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label small mb-0">To</label>
+                    <input type="date" name="to" class="form-control form-control-sm" th:value="${#temporals.format(to, 'yyyy-MM-dd')}"/>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-outline-primary btn-sm" th:text="#{action.filter}">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th th:text="#{label.date}">Date</th>
+                    <th th:text="#{agenda.title}">Title</th>
+                    <th th:text="#{agenda.type}">Type</th>
+                    <th th:text="#{agenda.location}">Location</th>
+                    <th class="text-end" th:text="#{label.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${events.isEmpty()}">
+                    <td colspan="5" class="text-center text-muted py-5"><i class="bi bi-calendar-x fs-1 d-block mb-2"></i>No events in this range.</td>
+                </tr>
+                <tr th:each="e : ${events}">
+                    <td th:text="${#temporals.format(e.startDatetime, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</td>
+                    <td><a th:href="@{/agenda/{id}(id=${e.id})}" class="text-decoration-none" th:text="${e.title}">Event</a></td>
+                    <td th:text="${e.type}">MEETING</td>
+                    <td th:text="${e.location ?: '—'}">—</td>
+                    <td class="text-end">
+                        <a th:href="@{/agenda/{id}(id=${e.id})}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center" th:if="${events.totalPages > 1}">
+            <small class="text-muted" th:text="'Page ' + (${events.number} + 1) + ' of ' + ${events.totalPages}"></small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${events.first} ? 'disabled'"><a class="page-link" th:href="@{/agenda(from=${#temporals.format(from,'yyyy-MM-dd')},to=${#temporals.format(to,'yyyy-MM-dd')},page=${events.number - 1})}"><i class="bi bi-chevron-left"></i></a></li>
+                    <li class="page-item" th:classappend="${events.last} ? 'disabled'"><a class="page-link" th:href="@{/agenda(from=${#temporals.format(from,'yyyy-MM-dd')},to=${#temporals.format(to,'yyyy-MM-dd')},page=${events.number + 1})}"><i class="bi bi-chevron-right"></i></a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -85,6 +85,8 @@ public class UserController {
         dto.setTimezone(user.getTimezone());
         dto.setActive(user.isActive());
         dto.setTenantAdmin(user.isTenantAdmin());
+        if (user.getManager() != null) dto.setManagerId(user.getManager().getId());
+        if (user.getLeaveValidator() != null) dto.setLeaveValidatorId(user.getLeaveValidator().getId());
         user.getRoles().forEach(r -> dto.getRoleIds().add(r.getId()));
 
         model.addAttribute("user", dto);
@@ -92,6 +94,7 @@ public class UserController {
         model.addAttribute("username", user.getUsername());
         model.addAttribute("roles", roleService.findAll());
         model.addAttribute("locales", availableLocales());
+        model.addAttribute("tenantUsers", userService.findAllForDropdown());
         return "modules/admin/users/form-edit";
     }
 
@@ -106,6 +109,7 @@ public class UserController {
             model.addAttribute("userId", id);
             model.addAttribute("roles", roleService.findAll());
             model.addAttribute("locales", availableLocales());
+            model.addAttribute("tenantUsers", userService.findAllForDropdown());
             return "modules/admin/users/form-edit";
         }
         try {
@@ -117,6 +121,7 @@ public class UserController {
             model.addAttribute("userId", id);
             model.addAttribute("roles", roleService.findAll());
             model.addAttribute("locales", availableLocales());
+            model.addAttribute("tenantUsers", userService.findAllForDropdown());
             return "modules/admin/users/form-edit";
         }
     }

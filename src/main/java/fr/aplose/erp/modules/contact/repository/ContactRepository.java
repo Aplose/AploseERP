@@ -16,8 +16,6 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
 
     Page<Contact> findByTenantIdAndDeletedAtIsNull(String tenantId, Pageable pageable);
 
-    List<Contact> findByThirdPartyIdAndDeletedAtIsNull(Long thirdPartyId);
-
     Optional<Contact> findByIdAndTenantIdAndDeletedAtIsNull(Long id, String tenantId);
 
     @Query("SELECT c FROM Contact c WHERE c.tenantId = :tid AND c.deletedAt IS NULL " +

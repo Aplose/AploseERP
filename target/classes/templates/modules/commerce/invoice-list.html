@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Invoices</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0"><i class="bi bi-receipt text-primary me-2"></i>Invoices</h4>
+            <small class="text-muted" th:text="${invoices.totalElements} + ' invoices'">0 invoices</small>
+        </div>
+        <a th:href="@{/invoices/new}" class="btn btn-primary" sec:authorize="hasAuthority('INVOICE_CREATE')">
+            <i class="bi bi-plus-lg me-1"></i>New Invoice
+        </a>
+    </div>
+
+    <!-- Search -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2">
+            <form th:action="@{/invoices}" method="get" class="d-flex gap-2 align-items-center flex-wrap">
+                <div class="input-group" style="max-width:400px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control"
+                           placeholder="Search reference, client..."
+                           th:value="${q}"/>
+                </div>
+                <button type="submit" class="btn btn-outline-primary">Search</button>
+                <a th:href="@{/invoices}" class="btn btn-outline-secondary"
+                   th:if="${!#strings.isEmpty(q) or !#strings.isEmpty(status) or !#strings.isEmpty(type)}">Clear</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Status Tabs -->
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${#strings.isEmpty(status)} ? 'active' : ''"
+               th:href="@{/invoices(q=${q})}">All</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${status == 'DRAFT'} ? 'active' : ''"
+               th:href="@{/invoices(q=${q}, status='DRAFT')}">Draft</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${status == 'VALIDATED'} ? 'active' : ''"
+               th:href="@{/invoices(q=${q}, status='VALIDATED')}">Validated</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${status == 'PARTIALLY_PAID'} ? 'active' : ''"
+               th:href="@{/invoices(q=${q}, status='PARTIALLY_PAID')}">Partial</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:classappend="${status == 'PAID'} ? 'active' : ''"
+               th:href="@{/invoices(q=${q}, status='PAID')}">Paid</a>
+        </li>
+    </ul>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Reference</th>
+                        <th>Type</th>
+                        <th>Client</th>
+                        <th>Date</th>
+                        <th>Due</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Remaining</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${invoices.isEmpty()}">
+                        <td colspan="9" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            No invoices found.
+                        </td>
+                    </tr>
+                    <tr th:each="inv : ${invoices}">
+                        <td>
+                            <a th:href="@{/invoices/{id}(id=${inv.id})}"
+                               class="fw-semibold text-decoration-none" th:text="${inv.reference}">INV-00001</a>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${inv.type == 'SALES'} ? 'bg-primary' : 'bg-warning text-dark'"
+                                  th:text="${inv.type}">SALES</span>
+                        </td>
+                        <td th:text="${inv.thirdParty.name}">Client</td>
+                        <td th:text="${#temporals.format(inv.dateIssued, 'dd/MM/yyyy')}">01/01/2025</td>
+                        <td>
+                            <span th:classappend="${inv.overdue} ? 'text-danger fw-bold' : ''"
+                                  th:text="${#temporals.format(inv.dateDue, 'dd/MM/yyyy')}">31/01/2025</span>
+                        </td>
+                        <td class="text-end fw-semibold">
+                            <span th:text="${#numbers.formatDecimal(inv.totalAmount, 1, 2)}">0.00</span>
+                            <small class="text-muted" th:text="${inv.currencyCode}">EUR</small>
+                        </td>
+                        <td class="text-end">
+                            <span th:classappend="${inv.amountRemaining.compareTo(T(java.math.BigDecimal).ZERO) > 0} ? 'text-danger' : 'text-success'"
+                                  th:text="${#numbers.formatDecimal(inv.amountRemaining, 1, 2)}">0.00</span>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${inv.statusBadgeClass}"
+                                  th:text="${inv.status}">DRAFT</span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/invoices/{id}(id=${inv.id})}"
+                               class="btn btn-sm btn-outline-secondary" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center"
+             th:if="${invoices.totalPages > 1}">
+            <small class="text-muted"
+                   th:text="'Page ' + (${invoices.number} + 1) + ' of ' + ${invoices.totalPages}"></small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${invoices.first} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/invoices(q=${q},type=${type},status=${status},page=${invoices.number - 1})}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item" th:classappend="${invoices.last} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/invoices(q=${q},type=${type},status=${status},page=${invoices.number + 1})}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

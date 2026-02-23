@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Fragment: extra fields block for entity forms. Requires extraFieldDefinitions (list), extraFieldValues (map). -->
+<th:block th:fragment="extra-fields-form" th:if="${extraFieldDefinitions != null and !#lists.isEmpty(extraFieldDefinitions)}">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent fw-semibold">
+                <i class="bi bi-sliders me-2 text-primary"></i>
+                <span th:text="#{extrafield.title}">Champs complémentaires</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <th:block th:each="def : ${extraFieldDefinitions}">
+                        <div class="col-md-6" th:if="${def.visibleOnForm}">
+                            <label class="form-label" th:text="${def.label}">Label</label>
+                            <th:block th:switch="${def.fieldType}">
+                                <!-- SELECT -->
+                                <select class="form-select" th:name="'extraField_' + ${def.fieldCode}" th:id="'extraField_' + ${def.fieldCode}">
+                                    <option value="">—</option>
+                                    <option th:each="opt : ${def.selectOptions}" th:value="${opt}" th:text="${opt}"
+                                            th:selected="${extraFieldValues != null and extraFieldValues[def.fieldCode] == opt}">Option</option>
+                                </select>
+                                <!-- BOOLEAN -->
+                                <div th:case="'BOOLEAN'" class="form-check">
+                                    <input type="hidden" th:name="'extraField_' + ${def.fieldCode}" value="false"/>
+                                    <input type="checkbox" class="form-check-input" th:id="'extraField_' + ${def.fieldCode}"
+                                           th:name="'extraField_' + ${def.fieldCode}" value="true"
+                                           th:checked="${extraFieldValues != null and extraFieldValues[def.fieldCode] == 'true'}"/>
+                                    <label class="form-check-label" th:for="'extraField_' + ${def.fieldCode}">—</label>
+                                </div>
+                                <!-- TEXT (textarea) -->
+                                <textarea th:case="'TEXT'" class="form-control" th:name="'extraField_' + ${def.fieldCode}"
+                                          th:id="'extraField_' + ${def.fieldCode}" rows="3"
+                                          th:text="${extraFieldValues != null ? extraFieldValues[def.fieldCode] : (def.defaultValue != null ? def.defaultValue : '')}"></textarea>
+                                <!-- INTEGER, DECIMAL, DATE, etc. -->
+                                <input th:case="*" th:type="${def.htmlInputType}" class="form-control"
+                                       th:name="'extraField_' + ${def.fieldCode}"
+                                       th:id="'extraField_' + ${def.fieldCode}"
+                                       th:value="${extraFieldValues != null ? extraFieldValues[def.fieldCode] : def.defaultValue}"
+                                       th:attr="step=${def.fieldType == 'DECIMAL' ? '0.01' : null}, min=${def.fieldType == 'INTEGER' or def.fieldType == 'DECIMAL' ? '0' : null}"/>
+                            </th:block>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

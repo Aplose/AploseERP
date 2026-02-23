@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="#{docs.title}">Documentation - AploseERP</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+    <style>
+        .docs-sidebar { position: sticky; top: 1rem; }
+        .docs-sidebar .nav-link { padding: 0.25rem 0.5rem; }
+        .docs-sidebar .nav-link.active { font-weight: 600; }
+        .docs-content h1 { font-size: 1.75rem; margin-bottom: 1rem; }
+        .docs-content h2 { font-size: 1.35rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .docs-content h3 { font-size: 1.1rem; margin-top: 1rem; }
+        .docs-content pre { background: var(--bs-light); padding: 1rem; border-radius: 0.25rem; overflow-x: auto; }
+        .docs-content code { background: var(--bs-light); padding: 0.2em 0.4em; border-radius: 0.2em; font-size: 0.9em; }
+        .docs-content pre code { background: none; padding: 0; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                <span th:text="#{app.name}">AploseERP</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarDocs">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarDocs">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" th:text="#{docs.sections}">Documentation</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/docs/user}" th:text="#{docs.user}">Utilisateur</a></li>
+                            <li><a class="dropdown-item" th:href="@{/docs/integrator}" th:text="#{docs.integrator}">Intégrateur</a></li>
+                            <li><a class="dropdown-item" th:href="@{/docs/developer}" th:text="#{docs.developer}">Développeur</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="navbar-nav ms-auto align-items-center">
+                    <a class="nav-link" th:href="@{/tarifs}" th:text="#{landing.pricing}">Tarifs</a>
+                    <a class="nav-link" th:href="@{/signup}" th:text="#{landing.signup}">S'inscrire</a>
+                    <a class="nav-link btn btn-outline-light btn-sm ms-2" th:href="@{/login}" th:text="#{landing.login}">Se connecter</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row">
+            <aside class="col-lg-3 mb-4 mb-lg-0">
+                <nav class="docs-sidebar">
+                    <ul class="nav flex-column">
+                        <li class="nav-item" th:each="link : ${toc}">
+                            <a th:href="@{/docs/__${link.path}__}"
+                               th:classappend="${link.page == docPage} ? 'active' : ''"
+                               class="nav-link"
+                               th:text="#{__${link.labelKey}__}">Link</a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+            <main class="col-lg-9">
+                <article class="docs-content" th:utext="${docContent}">
+                    <!-- Rendered Markdown content -->
+                </article>
+            </main>
+        </div>
+    </div>
+
+    <footer class="border-top py-3 mt-auto">
+        <div class="container text-center text-muted small">
+            <span th:text="#{app.name}">AploseERP</span> — <span th:text="#{docs.footer}">Documentation</span>
+            · <a th:href="https://github.com/Aplose/AploseERP" target="_blank" rel="noopener">GitHub</a>
+        </div>
+    </footer>
+
+    <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

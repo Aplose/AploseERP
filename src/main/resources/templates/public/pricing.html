@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="#{pricing.title}">Tarifs - AploseERP</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+    <style>
+        .pricing-card { transition: transform 0.2s; }
+        .pricing-card:hover { transform: translateY(-4px); }
+        .pricing-card.featured { border-width: 2px; border-color: #0d6efd; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                <span th:text="#{app.name}">AploseERP</span>
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" th:href="@{/tarifs}" th:text="#{landing.pricing}">Tarifs</a>
+                <a class="nav-link" th:href="@{/signup}" th:text="#{landing.signup}">S'inscrire</a>
+                <a class="nav-link btn btn-outline-light btn-sm ms-2" th:href="@{/login}" th:text="#{landing.login}">Se connecter</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <h1 class="text-center mb-5" th:text="#{pricing.title}">Choisissez votre formule</h1>
+        <div class="row g-4 justify-content-center">
+            <th:block th:each="plan : ${plans}">
+                <div class="col-md-4">
+                    <div class="card h-100 pricing-card" th:classappend="${plan.name == 'PREMIUM'} ? 'featured' : ''">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title" th:text="#{pricing.plan.__${plan.name}__}">Plan</h5>
+                            <div class="my-3">
+                                <span class="display-5 fw-bold" th:if="${plan.free}" th:text="#{pricing.free}">Gratuit</span>
+                                <th:block th:unless="${plan.free}">
+                                    <span class="display-5 fw-bold" th:text="${plan.pricePerUserPerMonthEur}">9</span>
+                                    <span th:text="#{pricing.perUserPerMonth}">€ / utilisateur / mois</span>
+                                </th:block>
+                            </div>
+                            <p class="text-muted small">
+                                <span th:if="${plan.maxUsers == -1}" th:text="#{pricing.users.unlimited}">Utilisateurs illimités</span>
+                                <span th:unless="${plan.maxUsers == -1}" th:text="#{pricing.users.max(plan.maxUsers)}">Jusqu'à {0} utilisateur(s)</span>
+                            </p>
+                            <ul class="list-unstyled small flex-grow-1" th:with="featuresStr=#{${plan.featuresMessageKey}}">
+                                <li th:each="item : ${#strings.arraySplit(featuresStr, '|')}"><i class="bi bi-check text-success me-2"></i><span th:text="${item}">Feature</span></li>
+                            </ul>
+                            <a th:href="@{/signup(plan=${plan.code})}" class="btn mt-3" th:classappend="${plan.name == 'PREMIUM'} ? 'btn-primary' : 'btn-outline-primary'" th:text="#{pricing.choose}">Choisir</a>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <span th:text="#{app.name}">AploseERP</span> — <span th:text="#{landing.footer}">Open Source ERP</span>
+        </div>
+    </footer>
+    <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

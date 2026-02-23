@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${roleId != null} ? 'Edit Role' : 'New Role'">Role</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center mb-4">
+        <a th:href="@{/admin/roles}" class="btn btn-sm btn-outline-secondary me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h4 class="mb-0">
+            <i class="bi bi-shield-lock text-primary me-2"></i>
+            <span th:text="${roleId != null} ? 'Edit Role' : 'New Role'">Role</span>
+        </h4>
+    </div>
+
+    <!-- System role warning -->
+    <div class="alert alert-warning" th:if="${isSystem}">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        <strong>System Role:</strong> You can edit the permissions, but not the code.
+    </div>
+
+    <form th:action="${roleId != null} ? @{/admin/roles/{id}/edit(id=${roleId})} : @{/admin/roles/new}"
+          method="post"
+          th:object="${role}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+        <div class="row g-3">
+            <!-- Left: role metadata -->
+            <div class="col-12 col-xl-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h6 class="mb-0">Role Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Code <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control font-monospace text-uppercase"
+                                   th:field="*{code}"
+                                   th:classappend="${#fields.hasErrors('code')} ? 'is-invalid'"
+                                   th:readonly="${isSystem}"
+                                   placeholder="e.g. SALES_MANAGER"/>
+                            <div class="invalid-feedback" th:errors="*{code}"></div>
+                            <div class="form-text">Uppercase letters, digits and underscores</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control"
+                                   th:field="*{name}"
+                                   th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'"
+                                   placeholder="e.g. Sales Manager"/>
+                            <div class="invalid-feedback" th:errors="*{name}"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Description</label>
+                            <textarea class="form-control" th:field="*{description}" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>
+                        <span th:text="${roleId != null} ? 'Save Changes' : 'Create Role'">Save</span>
+                    </button>
+                    <a th:href="@{/admin/roles}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </div>
+
+            <!-- Right: permission matrix -->
+            <div class="col-12 col-xl-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Permissions</h6>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary" id="selectAll">
+                                <i class="bi bi-check2-all me-1"></i>All
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="selectNone">
+                                <i class="bi bi-x-lg me-1"></i>None
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="moduleEntry : ${permissionsByModule}" class="mb-4">
+                            <!-- Module header -->
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-primary me-2" th:text="${moduleEntry.key}">MODULE</span>
+                                <hr class="flex-grow-1 my-0"/>
+                            </div>
+                            <!-- Permission checkboxes in a row -->
+                            <div class="d-flex flex-wrap gap-3">
+                                <div th:each="perm : ${moduleEntry.value}" class="form-check">
+                                    <input class="form-check-input perm-check" type="checkbox"
+                                           name="permissionIds"
+                                           th:value="${perm.id}"
+                                           th:id="'perm_' + ${perm.id}"
+                                           th:checked="${role.permissionIds.contains(perm.id)}"/>
+                                    <label class="form-check-label small" th:for="'perm_' + ${perm.id}"
+                                           th:text="${perm.action}">ACTION</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+<th:block layout:fragment="scripts">
+<script>
+document.getElementById('selectAll').addEventListener('click', () => {
+    document.querySelectorAll('.perm-check').forEach(cb => cb.checked = true);
+});
+document.getElementById('selectNone').addEventListener('click', () => {
+    document.querySelectorAll('.perm-check').forEach(cb => cb.checked = false);
+});
+// Auto-uppercase role code as user types
+const codeInput = document.querySelector('input[name="code"]');
+if (codeInput && !codeInput.readOnly) {
+    codeInput.addEventListener('input', function() {
+        const pos = this.selectionStart;
+        this.value = this.value.toUpperCase().replace(/[^A-Z0-9_]/g, '');
+        this.setSelectionRange(pos, pos);
+    });
+}
+</script>
+</th:block>
+</body>
+</html>

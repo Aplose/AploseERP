@@ -1,6 +1,8 @@
 package fr.aplose.erp.modules.thirdparty.entity;
 
+import fr.aplose.erp.core.businessobject.BusinessObject;
 import fr.aplose.erp.core.entity.BaseEntity;
+import fr.aplose.erp.modules.contact.entity.ContactThirdPartyLink;
 import fr.aplose.erp.security.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,13 +11,15 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "third_parties")
 @Getter
 @Setter
 @NoArgsConstructor
-public class ThirdParty extends BaseEntity {
+public class ThirdParty extends BaseEntity implements BusinessObject {
 
     @Column(name = "code", length = 50, nullable = false)
     private String code;
@@ -108,6 +112,14 @@ public class ThirdParty extends BaseEntity {
 
     @Column(name = "created_by")
     private Long createdById;
+
+    @OneToMany(mappedBy = "thirdParty")
+    private List<ContactThirdPartyLink> contactLinks = new ArrayList<>();
+
+    @Override
+    public String getBusinessObjectTypeCode() {
+        return "THIRD_PARTY";
+    }
 
     public String getDisplayType() {
         StringBuilder sb = new StringBuilder();

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="#{leave.title.list}">Leave requests</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0"><i class="bi bi-calendar-x text-primary me-2"></i><span th:text="#{leave.title.list}">Demandes de congés</span></h4>
+            <small class="text-muted" th:text="${requests.totalElements} + ' ' + #{leave.count}">0 demandes</small>
+        </div>
+        <a th:href="@{/leave-requests/new}" class="btn btn-primary" sec:authorize="hasAuthority('LEAVE_CREATE')">
+            <i class="bi bi-plus-lg me-1"></i><span th:text="#{leave.new}">Nouvelle demande</span>
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2">
+            <form th:action="@{/leave-requests}" method="get" class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <label class="form-label small mb-0" th:text="#{label.status}">Statut</label>
+                    <select name="status" class="form-select form-select-sm" th:value="${status}">
+                        <option value="">—</option>
+                        <option value="DRAFT" th:text="#{leave.status.DRAFT}">Brouillon</option>
+                        <option value="PENDING_APPROVAL" th:text="#{leave.status.PENDING_APPROVAL}">En attente</option>
+                        <option value="APPROVED" th:text="#{leave.status.APPROVED}">Approuvé</option>
+                        <option value="DENIED" th:text="#{leave.status.DENIED}">Refusé</option>
+                        <option value="CANCELLED" th:text="#{leave.status.CANCELLED}">Annulé</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label small mb-0" th:text="#{leave.fromDate}">Du</label>
+                    <input type="date" name="fromDate" class="form-control form-control-sm" th:value="${fromDate != null} ? ${#temporals.format(fromDate, 'yyyy-MM-dd')} : null"/>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label small mb-0" th:text="#{leave.toDate}">Au</label>
+                    <input type="date" name="toDate" class="form-control form-control-sm" th:value="${toDate != null} ? ${#temporals.format(toDate, 'yyyy-MM-dd')} : null"/>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-outline-primary btn-sm" th:text="#{action.filter}">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th th:text="#{leave.dates}">Période</th>
+                    <th th:text="#{leave.type}">Type</th>
+                    <th th:text="#{leave.requester}">Demandeur</th>
+                    <th th:text="#{label.status}">Statut</th>
+                    <th class="text-end" th:text="#{label.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${requests.isEmpty()}">
+                    <td colspan="5" class="text-center text-muted py-5"><i class="bi bi-calendar-x fs-1 d-block mb-2"></i><span th:text="#{leave.empty}">Aucune demande.</span></td>
+                </tr>
+                <tr th:each="r : ${requests}">
+                    <td th:text="${#temporals.format(r.dateStart, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(r.dateEnd, 'dd/MM/yyyy')}">01/01 - 05/01</td>
+                    <td><span class="badge" th:style="'background-color:' + ${r.leaveType.color}" th:text="${r.leaveType.label}">Congés payés</span></td>
+                    <td th:text="${r.requester.displayName}">User</td>
+                    <td><span class="badge" th:classappend="${r.statusBadgeClass}" th:text="${#messages.msg('leave.status.' + r.status)}">DRAFT</span></td>
+                    <td class="text-end">
+                        <a th:href="@{/leave-requests/{id}(id=${r.id})}" class="btn btn-sm btn-outline-primary" th:text="#{action.view}">Voir</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-transparent" th:if="${requests.totalPages > 1}">
+            <nav>
+                <ul class="pagination pagination-sm mb-0 justify-content-center">
+                    <li class="page-item" th:classappend="${!requests.hasPrevious()} ? 'disabled'">
+                        <a class="page-link" th:href="@{/leave-requests(status=${status}, requesterId=${requesterId}, fromDate=${fromDate}, toDate=${toDate}, page=${requests.number - 1})}">Préc.</a>
+                    </li>
+                    <li class="page-item disabled"><span class="page-link" th:text="${requests.number + 1} + ' / ' + ${requests.totalPages}">1 / 1</span></li>
+                    <li class="page-item" th:classappend="${!requests.hasNext()} ? 'disabled'">
+                        <a class="page-link" th:href="@{/leave-requests(status=${status}, requesterId=${requesterId}, fromDate=${fromDate}, toDate=${toDate}, page=${requests.number + 1})}">Suiv.</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

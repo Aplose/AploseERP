@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="#{extrafield.title}">Champs complémentaires</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${errorMessage}">Error.</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="mb-4">
+        <a th:href="@{/admin/extrafields/{entityType}(entityType=${entityType})}" class="btn btn-outline-secondary btn-sm mb-2"><i class="bi bi-arrow-left me-1"></i><span th:text="#{action.back}">Retour</span></a>
+        <h4><span th:if="${definitionId != null}" th:text="#{action.edit}">Modifier</span><span th:unless="${definitionId != null}" th:text="#{extrafield.newField}">Nouveau champ</span> — <span th:text="#{__${entityTypeLabel}__}">Type</span></h4>
+    </div>
+
+    <form th:action="${definitionId != null} ? @{/admin/extrafields/{entityType}/{id}/edit(entityType=${entityType}, id=${definitionId})} : @{/admin/extrafields/{entityType}/new(entityType=${entityType})}" th:object="${definition}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label" th:text="#{extrafield.fieldCode}">Code</label>
+                        <input type="text" class="form-control" th:field="*{fieldCode}" maxlength="50" th:readonly="${definitionId != null}"/>
+                        <small class="text-muted" th:text="#{extrafield.fieldCodeHelp}">Lettres minuscules, chiffres, underscores. Non modifiable après création.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" th:text="#{extrafield.label}">Libellé</label>
+                        <input type="text" class="form-control" th:field="*{label}" maxlength="255" required/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{extrafield.fieldType}">Type</label>
+                        <select class="form-select" th:field="*{fieldType}" required>
+                            <option th:each="ft : ${fieldTypes}" th:value="${ft[0]}" th:text="${ft[1]}">Text</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" th:text="#{extrafield.fieldOptions}">Options (liste déroulante)</label>
+                        <input type="text" class="form-control" th:field="*{fieldOptions}" placeholder="val1, val2, val3"/>
+                        <small class="text-muted" th:text="#{extrafield.fieldOptionsHelp}">Pour type « Select list » : valeurs séparées par des virgules.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" th:text="#{extrafield.defaultValue}">Valeur par défaut</label>
+                        <input type="text" class="form-control" th:field="*{defaultValue}" maxlength="500"/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{extrafield.sortOrder}">Ordre</label>
+                        <input type="number" class="form-control" th:field="*{sortOrder}" min="0"/>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check form-check-inline">
+                            <input type="checkbox" class="form-check-input" th:field="*{required}"/>
+                            <label class="form-check-label" th:text="#{extrafield.required}">Obligatoire</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input type="checkbox" class="form-check-input" th:field="*{visibleOnList}"/>
+                            <label class="form-check-label" th:text="#{extrafield.onList}">Visible en liste</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input type="checkbox" class="form-check-input" th:field="*{visibleOnDetail}"/>
+                            <label class="form-check-label" th:text="#{extrafield.onDetail}">Visible en détail</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input type="checkbox" class="form-check-input" th:field="*{visibleOnForm}"/>
+                            <label class="form-check-label" th:text="#{extrafield.onForm}">Visible sur formulaire</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input type="checkbox" class="form-check-input" th:field="*{active}"/>
+                            <label class="form-check-label" th:text="#{extrafield.active}">Actif</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" th:text="#{action.save}">Enregistrer</button>
+        <a th:href="@{/admin/extrafields/{entityType}(entityType=${entityType})}" class="btn btn-outline-secondary" th:text="#{action.cancel}">Annuler</a>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${requestId != null} ? #{action.edit} : #{leave.new}">Nouvelle demande</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center mb-4">
+        <a th:href="${requestId != null} ? @{/leave-requests/{id}(id=${requestId})} : @{/leave-requests}" class="btn btn-sm btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i></a>
+        <h4 class="mb-0">
+            <i class="bi bi-calendar-x text-primary me-2"></i>
+            <span th:text="${requestId != null} ? #{action.edit} : #{leave.new}">Nouvelle demande de congés</span>
+        </h4>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <form th:action="${requestId != null} ? @{/leave-requests/{id}/edit(id=${requestId})} : @{/leave-requests/new}" method="post" th:object="${request}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold" th:text="#{leave.type}">Type</label>
+                                <select class="form-select" th:field="*{leaveTypeId}" required>
+                                    <option value="">—</option>
+                                    <option th:each="lt : ${leaveTypes}" th:value="${lt.id}" th:text="${lt.label}">Type</option>
+                                </select>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('leaveTypeId')}" th:errors="*{leaveTypeId}"></div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold" th:text="#{leave.dateStart}">Date début</label>
+                                <input type="date" class="form-control" th:field="*{dateStart}" required/>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('dateStart')}" th:errors="*{dateStart}"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold" th:text="#{leave.dateEnd}">Date fin</label>
+                                <input type="date" class="form-control" th:field="*{dateEnd}" required/>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('dateEnd')}" th:errors="*{dateEnd}"></div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" th:field="*{halfDayStart}" id="halfDayStart"/>
+                                    <label class="form-check-label" for="halfDayStart" th:text="#{leave.halfDayStart}">Début en demi-journée</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" th:field="*{halfDayEnd}" id="halfDayEnd"/>
+                                    <label class="form-check-label" for="halfDayEnd" th:text="#{leave.halfDayEnd}">Fin en demi-journée</label>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold" th:text="#{leave.comment}">Commentaire</label>
+                                <textarea class="form-control" th:field="*{comment}" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <hr class="my-4"/>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i><span th:text="#{action.save}">Enregistrer</span></button>
+                            <a th:href="${requestId != null} ? @{/leave-requests/{id}(id=${requestId})} : @{/leave-requests}" class="btn btn-outline-secondary" th:text="#{action.cancel}">Annuler</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

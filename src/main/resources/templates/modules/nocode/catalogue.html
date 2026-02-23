@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="#{nocode.catalogue.title}">Module catalogue</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="mb-4">
+        <h4 class="mb-1" th:text="#{nocode.catalogue.title}">Module catalogue</h4>
+        <p class="text-muted mb-0" th:text="#{nocode.catalogue.description}">Description</p>
+    </div>
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}">Success</div>
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>Module</th>
+                    <th>Description</th>
+                    <th th:text="#{label.actions}">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="e : ${entries}">
+                    <td>
+                        <strong th:text="${e.name}">Name</strong>
+                        <small class="text-muted d-block" th:text="${e.code}">code</small>
+                    </td>
+                    <td th:text="${e.description}">Description</td>
+                    <td>
+                        <span th:if="${e.activated}" class="badge bg-success" th:text="#{nocode.catalogue.activated}">Activated</span>
+                        <form th:unless="${e.activated}" th:action="@{/admin/module-catalogue/activate/{id}(id=${e.id})}" method="post" class="d-inline">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-sm btn-primary" th:text="#{nocode.catalogue.activate}">Activate</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(entries)}">
+                    <td colspan="3" class="text-center text-muted" th:text="#{common.no}">No public modules</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

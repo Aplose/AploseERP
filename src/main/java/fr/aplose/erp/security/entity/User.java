@@ -80,6 +80,14 @@ public class User {
     )
     private Set<Role> roles = new HashSet<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private User manager;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "leave_validator_id")
+    private User leaveValidator;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

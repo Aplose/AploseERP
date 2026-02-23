@@ -29,5 +29,10 @@ public class UserEditDto {
     private boolean active = true;
     private boolean tenantAdmin = false;
 
+    /** Responsable hiérarchique (User id). */
+    private Long managerId;
+    /** Validateur de congés (User id). */
+    private Long leaveValidatorId;
+
     private Set<Long> roleIds = new HashSet<>();
 }

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="#{emailtemplate.edit}">Modifier le modèle</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="mb-4">
+        <a th:href="@{/admin/email-templates}" class="btn btn-outline-secondary btn-sm mb-2"><i class="bi bi-arrow-left me-1"></i><span th:text="#{action.back}">Retour</span></a>
+        <h4 th:text="#{emailtemplate.edit} + ' - ' + ${template.templateKey}">Modifier le modèle</h4>
+    </div>
+
+    <form th:action="@{/admin/email-templates/{id}/edit(id=${template.id})}" th:object="${template}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <p class="text-muted small"><span th:text="#{emailtemplate.key}">Clé</span>: <span th:text="${template.templateKey}">welcome</span> | <span th:text="#{emailtemplate.locale}">Langue</span>: <span th:text="${template.locale}">fr</span></p>
+                <div class="mb-3">
+                    <label class="form-label" th:text="#{emailtemplate.subject}">Sujet</label>
+                    <input type="text" class="form-control" th:field="*{subject}" maxlength="500" required/>
+                    <div class="invalid-feedback" th:errors="*{subject}"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" th:text="#{emailtemplate.bodyHtml}">Corps HTML</label>
+                    <textarea class="form-control font-monospace" th:field="*{bodyHtml}" rows="10"></textarea>
+                    <small class="text-muted">Variables : {{userName}}, {{companyName}}, {{loginUrl}}</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" th:text="#{emailtemplate.bodyText}">Corps texte</label>
+                    <textarea class="form-control font-monospace" th:field="*{bodyText}" rows="5"></textarea>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary" th:text="#{action.save}">Enregistrer</button>
+        <a th:href="@{/admin/email-templates}" class="btn btn-outline-secondary" th:text="#{action.cancel}">Annuler</a>
+    </form>
+</div>
+</body>
+</html>
