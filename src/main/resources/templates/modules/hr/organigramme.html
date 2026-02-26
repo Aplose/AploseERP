@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title>Organigramme</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/hr}">HR</a></li>
+                <li class="breadcrumb-item active">Organigramme</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>Organigramme</h4>
+        <small class="text-muted">Organisation tree by manager</small>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <th:block th:if="${#lists.isEmpty(roots)}">
+                <p class="text-muted mb-0">No employees or no root (employees without manager). Add employees and set their manager to build the tree.</p>
+            </th:block>
+            <ul class="list-unstyled mb-0 organigramme-tree">
+                <li th:each="root : ${roots}" class="mb-3">
+                    <div class="d-flex align-items-center border rounded p-2 bg-light">
+                        <a th:href="@{/hr/employees/{id}(id=${root.id})}" class="fw-semibold text-decoration-none" th:text="${root.displayName}">Name</a>
+                        <span class="badge bg-secondary ms-2" th:if="${root.jobPosition != null}" th:text="${root.jobPosition.label}">Position</span>
+                    </div>
+                    <ul th:if="${hrService.findSubordinates(root.id).size() > 0}" class="list-unstyled ms-4 mt-2">
+                        <li th:each="sub : ${hrService.findSubordinates(root.id)}" class="mb-2">
+                            <div class="d-flex align-items-center border rounded p-2">
+                                <a th:href="@{/hr/employees/{id}(id=${sub.id})}" class="text-decoration-none" th:text="${sub.displayName}">Name</a>
+                                <span class="badge bg-secondary ms-2" th:if="${sub.jobPosition != null}" th:text="${sub.jobPosition.label}">Position</span>
+                            </div>
+                            <ul th:if="${hrService.findSubordinates(sub.id).size() > 0}" class="list-unstyled ms-4 mt-2">
+                                <li th:each="sub2 : ${hrService.findSubordinates(sub.id)}" class="mb-2">
+                                    <div class="d-flex align-items-center border rounded p-2">
+                                        <a th:href="@{/hr/employees/{id}(id=${sub2.id})}" class="text-decoration-none" th:text="${sub2.displayName}">Name</a>
+                                        <span class="badge bg-secondary ms-2" th:if="${sub2.jobPosition != null}" th:text="${sub2.jobPosition.label}">Position</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

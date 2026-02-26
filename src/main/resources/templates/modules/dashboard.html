@@ -6,6 +6,7 @@
       layout:decorate="~{layout/base}">
 <head>
     <title th:text="#{dashboard.title}">Dashboard</title>
+    <th:block layout:fragment="head-extra"></th:block>
 </head>
 <body>
 <div layout:fragment="content">
@@ -141,5 +142,6 @@
     </div>
 
 </div>
+<th:block layout:fragment="scripts"></th:block>
 </body>
 </html>

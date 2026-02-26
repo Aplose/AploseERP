@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="#{ai.assistant.title}">Assistant</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="d-flex align-items-center mb-4">
+        <i class="bi bi-chat-dots text-primary me-3" style="font-size: 1.8rem;"></i>
+        <div>
+            <h4 class="mb-0" th:text="#{ai.assistant.title}">Assistant</h4>
+            <small class="text-muted" th:text="#{ai.assistant.subtitle}">Posez des questions en langage naturel sur vos données (tiers, factures, devis).</small>
+        </div>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="#{${error}}">Error</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${!available}" class="alert alert-warning">
+        <span th:text="#{ai.assistant.unavailable}">L’assistant n’est pas disponible. Configurez l’IA (Paramètres → IA) ou une URL Ollama par tenant.</span>
+    </div>
+
+    <div th:if="${available}" class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form th:action="@{/assistant/ask}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <label class="form-label" th:text="#{ai.assistant.question}">Votre question</label>
+                <textarea name="question" class="form-control mb-2" rows="3" placeholder="Ex: Combien ai-je de factures en attente ?"
+                          th:placeholder="#{ai.assistant.placeholder}"></textarea>
+                <button type="submit" class="btn btn-primary" th:text="#{ai.assistant.ask}">Envoyer</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:if="${lastAnswer != null}" class="card border-0 shadow-sm mb-4 border-start border-primary border-4">
+        <div class="card-body">
+            <h6 class="text-muted" th:text="#{ai.assistant.lastQuestion}">Question</h6>
+            <p class="mb-2" th:text="${lastQuestion}">—</p>
+            <h6 class="text-muted mt-3" th:text="#{ai.assistant.answer}">Réponse</h6>
+            <p class="mb-0 whitespace-preline" th:text="${lastAnswer}">—</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent fw-semibold" th:text="#{ai.assistant.history}">Historique des requêtes</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th th:text="#{ai.assistant.question}">Question</th>
+                            <th th:text="#{ai.assistant.answer}">Réponse</th>
+                            <th th:text="#{ai.assistant.date}">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${auditPage.isEmpty()}">
+                            <td colspan="3" class="text-center text-muted py-4" th:text="#{ai.assistant.noHistory}">Aucune question encore.</td>
+                        </tr>
+                        <tr th:each="row : ${auditPage.content}">
+                            <td th:text="${#strings.abbreviate(row.question, 80)}">—</td>
+                            <td th:text="${#strings.abbreviate(row.answerPreview, 80)}">—</td>
+                            <td th:text="${#temporals.format(row.createdAt, 'dd/MM/yyyy HH:mm')}">—</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div th:if="${auditPage.totalPages > 1}" class="card-footer d-flex justify-content-between align-items-center">
+                <span class="small text-muted"><span th:text="#{common.page}">Page</span> <span th:text="${auditPage.number + 1}">1</span> / <span th:text="${auditPage.totalPages}">1</span></span>
+                <div>
+                    <a th:if="${auditPage.hasPrevious()}" th:href="@{/assistant(page=${auditPage.number - 1})}" class="btn btn-sm btn-outline-secondary" th:text="#{common.previous}">Précédent</a>
+                    <a th:if="${auditPage.hasNext()}" th:href="@{/assistant(page=${auditPage.number + 1})}" class="btn btn-sm btn-outline-secondary ms-1" th:text="#{common.next}">Suivant</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

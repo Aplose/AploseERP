@@ -5,7 +5,6 @@ import fr.aplose.erp.modules.leave.repository.LeaveTypeRepository;
 import fr.aplose.erp.tenant.context.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;

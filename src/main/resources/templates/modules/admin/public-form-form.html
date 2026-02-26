@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="${form.id != null} ? #{common.edit} : #{publicform.admin.new}">Formulaire</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center mb-4">
+        <a th:href="@{/admin/public-forms}" class="btn btn-outline-secondary btn-sm me-2"><i class="bi bi-arrow-left"></i></a>
+        <h4 class="mb-0" th:text="${form.id != null} ? #{common.edit} : #{publicform.admin.new}">Formulaire</h4>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="#{${error}}">Error</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <form th:action="@{/admin/public-forms/save}" th:object="${form}" method="post" class="card border-0 shadow-sm">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" th:field="*{id}"/>
+        <input type="hidden" th:field="*{tenantId}"/>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" th:text="#{publicform.code}">Code</label>
+                    <input th:field="*{code}" class="form-control" placeholder="contact" required maxlength="64"/>
+                    <small class="text-muted" th:text="#{publicform.code.help}">Utilisé dans l’URL : /form/{code}</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" th:text="#{publicform.name}">Nom</label>
+                    <input th:field="*{name}" class="form-control" required maxlength="255"/>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" th:text="#{publicform.description}">Description (optionnelle)</label>
+                    <input th:field="*{description}" class="form-control" maxlength="500"/>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" th:text="#{publicform.fieldsJson}">Champs (JSON)</label>
+                    <textarea th:field="*{fieldsJson}" class="form-control font-monospace small" rows="12" required></textarea>
+                    <small class="text-muted" th:text="#{publicform.fieldsJson.help}">Tableau JSON : name, label, type (text|email|textarea|tel|number), required, placeholder</small>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" th:text="#{publicform.successMessage}">Message après envoi (optionnel)</label>
+                    <input th:field="*{successMessage}" class="form-control" maxlength="500" placeholder="Merci ! Nous vous recontacterons."/>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" th:text="#{publicform.notifyEmails}">Emails de notification (séparés par des virgules)</label>
+                    <input th:field="*{notifyEmails}" class="form-control" maxlength="500" placeholder="admin@example.com"/>
+                </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input th:field="*{captchaEnabled}" class="form-check-input" type="checkbox"/>
+                        <label class="form-check-label" th:text="#{publicform.captchaEnabled}">Activer le captcha (calcul simple)</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-check">
+                        <input th:field="*{enabled}" class="form-check-input" type="checkbox"/>
+                        <label class="form-check-label" th:text="#{publicform.enabled}">Formulaire actif (visible publiquement)</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary" th:text="#{common.save}">Enregistrer</button>
+                    <a th:href="@{/admin/public-forms}" class="btn btn-outline-secondary ms-2" th:text="#{common.cancel}">Annuler</a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

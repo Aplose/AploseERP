@@ -20,19 +20,25 @@ public class ModuleAccessInterceptor implements HandlerInterceptor {
     private static final Map<String, String> PATH_PREFIX_TO_MODULE = Map.ofEntries(
             Map.entry("/third-parties", "CRM_THIRD_PARTY"),
             Map.entry("/contacts", "CRM_CONTACT"),
+            Map.entry("/crm/activities", "CRM_ACTIVITY"),
             Map.entry("/proposals", "COMMERCE_PROPOSAL"),
+            Map.entry("/pipeline", "PIPELINE"),
             Map.entry("/orders", "COMMERCE_ORDER"),
             Map.entry("/invoices", "COMMERCE_INVOICE"),
+            Map.entry("/follow-up", "FOLLOW_UP"),
+            Map.entry("/contracts", "BUSINESS_CONTRACT"),
             Map.entry("/products", "CATALOG_PRODUCT"),
             Map.entry("/projects", "PROJECT"),
             Map.entry("/agenda", "AGENDA"),
             Map.entry("/bank", "BANK"),
+            Map.entry("/treasury", "TREASURY"),
             Map.entry("/accounting", "ACCOUNTING"),
             Map.entry("/hr", "HR"),
             Map.entry("/leave-requests", "LEAVE_REQUEST"),
             Map.entry("/ged", "GED"),
             Map.entry("/ticketing", "TICKETING"),
-            Map.entry("/reporting", "REPORTING")
+            Map.entry("/reporting", "REPORTING"),
+            Map.entry("/automation", "AUTOMATION")
     );
 
     private final TenantModuleService tenantModuleService;

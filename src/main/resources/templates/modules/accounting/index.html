@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Accounting</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0"><i class="bi bi-journal-bookmark text-primary me-2"></i>Accounting</h4>
+            <small class="text-muted">Chart of accounts, journals and entries</small>
+        </div>
+        <a th:href="@{/accounting/entries/new}" class="btn btn-primary" sec:authorize="hasAuthority('ACCOUNTING_CREATE')">
+            <i class="bi bi-plus-lg me-1"></i>New entry
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Journals</h5>
+                    <a th:href="@{/accounting/accounts}">Chart of accounts</a>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a th:each="j : ${journals}" th:href="@{/accounting/entries(journalId=${j.id})}"
+                       class="list-group-item list-group-item-action" th:text="${j.code + ' - ' + j.label}">Journal</a>
+                    <li th:if="${#lists.isEmpty(journals)}" class="list-group-item text-muted">No journals defined.</li>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent entries</h5>
+                    <a th:href="@{/accounting/entries}">View all</a>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a th:each="e : ${recentEntries}" th:href="@{/accounting/entries/{id}(id=${e.id})}"
+                       class="list-group-item list-group-item-action d-flex justify-content-between">
+                        <span th:text="${e.reference ?: e.description ?: 'Entry'}">Entry</span>
+                        <span class="text-muted" th:text="${#temporals.format(e.entryDate, 'dd/MM/yyyy')}">Date</span>
+                    </a>
+                    <li th:if="${recentEntries.isEmpty()}" class="list-group-item text-muted">No entries yet.</li>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

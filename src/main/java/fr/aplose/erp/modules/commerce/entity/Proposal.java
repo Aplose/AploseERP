@@ -11,6 +11,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,8 +76,21 @@ public class Proposal extends BaseEntity {
     @Column(name = "converted_to_order_id")
     private Long convertedToOrderId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pipeline_stage_id")
+    private PipelineStage pipelineStage;
+
     @Column(name = "created_by")
     private Long createdById;
+
+    @Column(name = "last_reminder_at")
+    private LocalDateTime lastReminderAt;
+
+    @Column(name = "signature_status", length = 30)
+    private String signatureStatus;
+
+    @Column(name = "signature_external_id", length = 255)
+    private String signatureExternalId;
 
     @OneToMany(mappedBy = "proposal", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="#{portal.documents}">Documents</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/portal}"><span th:text="#{portal.dashboard.title}">Portal</span></a></li>
+                <li class="breadcrumb-item active" th:text="#{portal.documents}">Documents</li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h4 class="mb-0">
+                    <i class="bi bi-folder2-open text-info me-2"></i>
+                    <span th:text="#{portal.documents}">Documents</span>
+                </h4>
+                <small class="text-muted" th:text="${#lists.size(documents)} + ' ' + #{portal.items}">0 items</small>
+            </div>
+            <a th:href="@{/portal/documents/upload}" class="btn btn-primary btn-sm">
+                <i class="bi bi-upload me-1"></i><span th:text="#{portal.upload}">Upload</span>
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="#{${message}}">Success</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="#{${error}}">Error</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th th:text="#{portal.document.name}">Name</th>
+                        <th th:text="#{portal.document.size}">Size</th>
+                        <th th:text="#{portal.document.date}">Date</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${documents.isEmpty()}">
+                        <td colspan="4" class="text-center text-muted py-5">
+                            <i class="bi bi-folder2-open fs-1 d-block mb-2"></i>
+                            <span th:text="#{portal.noDocuments}">No documents yet.</span>
+                            <p class="mb-0 mt-2">
+                                <a th:href="@{/portal/documents/upload}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-upload me-1"></i><span th:text="#{portal.upload}">Upload</span>
+                                </a>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr th:each="doc : ${documents}">
+                        <td>
+                            <i class="bi bi-file-earmark me-2 text-muted"></i>
+                            <span th:text="${doc.fileName}">document.pdf</span>
+                        </td>
+                        <td th:text="${doc.fileSize != null} ? ${#numbers.formatInteger(doc.fileSize, 3, 'COMMA')} + ' ' + #{portal.bytes} : '—'">—</td>
+                        <td th:text="${#temporals.format(doc.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025</td>
+                        <td class="text-end">
+                            <a th:href="@{/portal/documents/{id}/download(id=${doc.id})}" class="btn btn-sm btn-outline-primary" title="Download">
+                                <i class="bi bi-download"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

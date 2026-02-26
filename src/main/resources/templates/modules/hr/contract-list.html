@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Contracts</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/hr}">HR</a></li>
+                <li class="breadcrumb-item active">Contracts</li>
+            </ol>
+        </nav>
+        <a th:href="@{/hr/contracts/new}" class="btn btn-primary" sec:authorize="hasAuthority('HR_CREATE')">
+            <i class="bi bi-plus-lg me-1"></i>New contract
+        </a>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show" th:text="${message}">Message</div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Employee</th>
+                        <th>Type</th>
+                        <th>Start date</th>
+                        <th>End date</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(contracts)}">
+                        <td colspan="6" class="text-center text-muted py-5">No contracts.</td>
+                    </tr>
+                    <tr th:each="c : ${contracts}">
+                        <td>
+                            <a th:href="@{/hr/employees/{id}(id=${c.employee.id})}" class="fw-semibold text-decoration-none" th:text="${c.employee.displayName}">Employee</a>
+                        </td>
+                        <td th:text="${c.contractType}">Type</td>
+                        <td th:text="${#temporals.format(c.startDate, 'dd/MM/yyyy')}">Start</td>
+                        <td th:text="${c.endDate != null} ? ${#temporals.format(c.endDate, 'dd/MM/yyyy')} : '—'">End</td>
+                        <td><span class="badge bg-secondary" th:text="${c.status}">Status</span></td>
+                        <td class="text-end">
+                            <a th:href="@{/hr/contracts/{id}/edit(id=${c.id})}" class="btn btn-sm btn-outline-primary" sec:authorize="hasAuthority('HR_UPDATE')">Edit</a>
+                            <form th:action="@{/hr/contracts/{id}/delete(id=${c.id})}" method="post" class="d-inline" sec:authorize="hasAuthority('HR_DELETE')"
+                                  onsubmit="return confirm('Delete this contract?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

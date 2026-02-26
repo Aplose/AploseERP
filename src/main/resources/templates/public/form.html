@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${form.name}">Formulaire</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="bi bi-grid-3x3-gap-fill me-2"></i>
+                <span th:text="#{app.name}">AploseERP</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h2 class="h4 mb-2" th:text="${form.name}">Formulaire</h2>
+                        <p class="text-muted small mb-4" th:if="${form.description}" th:text="${form.description}"></p>
+
+                        <div th:if="${errorKey}" class="alert alert-danger" th:text="#{${errorKey}}">Erreur</div>
+
+                        <form th:action="${formAction}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <div th:each="field : ${fields}" class="mb-3">
+                                <label th:for="${field.name}" class="form-label" th:text="${field.label}">Label</label>
+                                <textarea th:if="${field.type == 'textarea'}"
+                                          th:id="${field.name}"
+                                          th:name="${field.name}"
+                                          class="form-control"
+                                          th:required="${field.required}"
+                                          th:placeholder="${field.placeholder}"
+                                          rows="4"></textarea>
+                                <input th:unless="${field.type == 'textarea'}"
+                                       th:id="${field.name}"
+                                       th:name="${field.name}"
+                                       th:type="${field.type}"
+                                       class="form-control"
+                                       th:required="${field.required}"
+                                       th:placeholder="${field.placeholder}"/>
+                            </div>
+                            <div th:if="${captchaA != null}" class="mb-3">
+                                <label class="form-label" th:text="#{publicform.captcha.label}">Combien font ... ?</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span th:text="${captchaA} + ${captchaB} + ' = '">?</span>
+                                    <input type="text" name="captchaAnswer" class="form-control" style="max-width: 6rem;" required autocomplete="off"/>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" th:text="#{publicform.submit}">Envoyer</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

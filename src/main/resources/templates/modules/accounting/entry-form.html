@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>New entry</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/accounting}">Accounting</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/accounting/entries}">Entries</a></li>
+                <li class="breadcrumb-item active">New entry</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">New accounting entry</h4>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}">Error</div>
+
+    <form th:action="@{/accounting/entries}" th:object="${entry}" method="post" class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Journal <span class="text-danger">*</span></label>
+                    <select class="form-select" name="journalId" id="journalId" required>
+                        <option value="">— Select journal —</option>
+                        <option th:each="j : ${journals}" th:value="${j.id}" th:text="${j.code + ' - ' + j.label}"
+                                th:selected="${entry.journal != null && entry.journal.id == j.id}">Journal</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Date <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" th:field="*{entryDate}" required/>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Reference</label>
+                    <input type="text" class="form-control" th:field="*{reference}" maxlength="100"/>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description</label>
+                    <input type="text" class="form-control" th:field="*{description}" maxlength="500"/>
+                </div>
+            </div>
+            <h6 class="mb-2">Lines</h6>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead><tr><th>Account</th><th class="text-end">Debit</th><th class="text-end">Credit</th></tr></thead>
+                    <tbody>
+                        <tr th:each="i : ${#numbers.sequence(0, 2)}">
+                            <td>
+                                <select name="accountIds" class="form-select form-select-sm">
+                                    <option value="">—</option>
+                                    <option th:each="acc : ${accounts}" th:value="${acc.id}" th:text="${acc.code + ' - ' + acc.label}">Account</option>
+                                </select>
+                            </td>
+                            <td><input type="number" name="debits" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00"/></td>
+                            <td><input type="number" name="credits" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-muted small">At least one line with debit or credit. Total debits must equal total credits.</p>
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between">
+            <a th:href="@{/accounting/entries}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Create entry</button>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

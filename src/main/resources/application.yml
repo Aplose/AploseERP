@@ -1,3 +1,11 @@
+# OpenAPI (springdoc) - document only /api/v1
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  packages-to-scan: fr.aplose.erp.api.v1
+
 spring:
   application:
     name: AploseERP
@@ -39,6 +47,12 @@ app:
   base-url: http://localhost:8080
   mail:
     from: noreply@aplose-erp.local
+  # Phase 5 – IA : optionnel, désactivé si api-key absent
+  ai:
+    enabled: false
+    api-key: ${OPENAI_API_KEY:}
+    base-url: https://api.openai.com
+    model: gpt-4o-mini
 
 logging:
   level:

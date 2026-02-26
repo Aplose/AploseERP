@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Reporting</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <h4 class="mb-0"><i class="bi bi-graph-up text-primary me-2"></i>Reporting</h4>
+        <small class="text-muted">Predefined reports and dashboard</small>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Sales this month</h6>
+                    <p class="h4 mb-0" th:text="${#numbers.formatDecimal(salesThisMonth, 1, 2) + ' EUR'}">0.00 EUR</p>
+                    <a th:href="@{/reporting/sales}">View sales report</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Overdue invoices</h6>
+                    <p class="h4 mb-0" th:text="${overdueCount}">0</p>
+                    <a th:href="@{/reporting/overdue-invoices}">View list</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Leave requests</h6>
+                    <p class="h4 mb-0" th:text="${#lists.size(recentLeave)}">0</p>
+                    <a th:href="@{/reporting/leave}">View leave report</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent"><h5 class="mb-0">Report links</h5></div>
+        <div class="list-group list-group-flush">
+            <a th:href="@{/reporting/sales}" class="list-group-item list-group-item-action">Sales by period (CA)</a>
+            <a th:href="@{/reporting/overdue-invoices}" class="list-group-item list-group-item-action">Overdue invoices</a>
+            <a th:href="@{/reporting/leave}" class="list-group-item list-group-item-action">Leave requests summary</a>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

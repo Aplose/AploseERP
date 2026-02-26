@@ -1,6 +1,8 @@
 package fr.aplose.erp.modules.commerce.service;
 
+import fr.aplose.erp.modules.automation.service.AutomationRuleService;
 import fr.aplose.erp.modules.catalog.repository.ProductRepository;
+import fr.aplose.erp.modules.webhook.service.WebhookService;
 import fr.aplose.erp.modules.commerce.entity.Invoice;
 import fr.aplose.erp.modules.commerce.entity.InvoiceLine;
 import fr.aplose.erp.modules.commerce.entity.Payment;
@@ -20,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -31,6 +35,8 @@ public class InvoiceService {
     private final ThirdPartyRepository thirdPartyRepo;
     private final ContactRepository contactRepo;
     private final ProductRepository productRepo;
+    private final AutomationRuleService automationRuleService;
+    private final WebhookService webhookService;
 
     @Transactional(readOnly = true)
     public Page<Invoice> findAll(String q, String type, String status, Pageable pageable) {
@@ -55,7 +61,9 @@ public class InvoiceService {
         inv.setReference(generateReference(tid, dto.getType()));
         inv.setCreatedById(currentUserId);
         applyDto(inv, dto, tid);
-        return repo.save(inv);
+        inv = repo.save(inv);
+        webhookService.trigger(tid, "INVOICE.CREATED", invoicePayload(inv));
+        return inv;
     }
 
     @Transactional
@@ -122,6 +130,14 @@ public class InvoiceService {
         inv.setValidatedAt(LocalDateTime.now());
         inv.setValidatedById(userId);
         repo.save(inv);
+
+        Map<String, Object> context = new HashMap<>();
+        context.put("status", "VALIDATED");
+        context.put("amount", inv.getTotalAmount());
+        context.put("entityId", inv.getId());
+        context.put("thirdPartyId", inv.getThirdParty() != null ? inv.getThirdParty().getId() : null);
+        automationRuleService.runRules("INVOICE", "VALIDATED", context);
+        webhookService.trigger(inv.getTenantId(), "INVOICE.VALIDATED", invoicePayload(inv));
     }
 
     @Transactional
@@ -203,5 +219,19 @@ public class InvoiceService {
         inv.setBankAccount(dto.getBankAccount());
         inv.setNotes(dto.getNotes());
         inv.setTerms(dto.getTerms());
+    }
+
+    private Map<String, Object> invoicePayload(Invoice inv) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("entityId", inv.getId());
+        data.put("reference", inv.getReference());
+        data.put("status", inv.getStatus());
+        data.put("type", inv.getType());
+        data.put("totalAmount", inv.getTotalAmount());
+        data.put("currencyCode", inv.getCurrencyCode());
+        data.put("dateIssued", inv.getDateIssued() != null ? inv.getDateIssued().toString() : null);
+        data.put("dateDue", inv.getDateDue() != null ? inv.getDateDue().toString() : null);
+        data.put("thirdPartyId", inv.getThirdParty() != null ? inv.getThirdParty().getId() : null);
+        return data;
     }
 }

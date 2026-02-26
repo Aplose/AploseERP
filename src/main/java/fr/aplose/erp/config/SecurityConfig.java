@@ -1,5 +1,6 @@
 package fr.aplose.erp.config;
 
+import fr.aplose.erp.security.api.ApiKeyAuthenticationFilter;
 import fr.aplose.erp.security.service.ErpUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -21,6 +23,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final ErpUserDetailsService userDetailsService;
+    private final ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -51,15 +54,20 @@ public class SecurityConfig {
                     "/tarifs",
                     "/signup", "/signup/**",
                     "/docs", "/docs/**",
+                    "/form", "/form/**",
+                    "/t/*/form", "/t/*/form/**",
                     "/error",
                     "/webjars/**",
                     "/css/**", "/js/**", "/images/**",
                     "/favicon.ico",
-                    "/h2-console/**"
+                    "/h2-console/**",
+                    "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"
                 ).permitAll()
                 .requestMatchers("/admin/**").hasAnyAuthority("SUPER_ADMIN", "TENANT_ADMIN", "ROLE_SUPER_ADMIN", "ROLE_TENANT_ADMIN")
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .httpBasic(basic -> {})
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
@@ -83,7 +91,7 @@ public class SecurityConfig {
             // Allow H2 console in dev (frames)
             .headers(headers -> headers.frameOptions(fo -> fo.sameOrigin()))
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**")
+                .ignoringRequestMatchers("/h2-console/**", "/api/**")
             );
 
         return http.build();

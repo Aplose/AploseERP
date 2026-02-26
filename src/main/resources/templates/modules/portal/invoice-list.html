@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="#{portal.invoices}">Invoices</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/portal}"><span th:text="#{portal.dashboard.title}">Portal</span></a></li>
+                <li class="breadcrumb-item active" th:text="#{portal.invoices}">Invoices</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">
+            <i class="bi bi-receipt text-primary me-2"></i>
+            <span th:text="#{portal.invoices}">Invoices</span>
+        </h4>
+        <small class="text-muted" th:text="${#lists.size(invoices)} + ' ' + #{portal.items}">0 items</small>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th th:text="#{invoice.label.reference}">Reference</th>
+                        <th th:text="#{invoice.label.type}">Type</th>
+                        <th th:text="#{invoice.label.dateIssued}">Date</th>
+                        <th th:text="#{invoice.label.dateDue}">Due</th>
+                        <th class="text-end" th:text="#{invoice.label.totalAmount}">Total</th>
+                        <th class="text-end" th:text="#{invoice.label.amountRemaining}">Remaining</th>
+                        <th th:text="#{invoice.label.status}">Status</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${invoices.isEmpty()}">
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            <span th:text="#{portal.noInvoices}">No invoices found.</span>
+                        </td>
+                    </tr>
+                    <tr th:each="inv : ${invoices}">
+                        <td>
+                            <a th:href="@{/portal/invoices/{id}(id=${inv.id})}" class="fw-semibold text-decoration-none"
+                               th:text="${inv.reference}">INV-001</a>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${inv.type == 'SALES'} ? 'bg-primary' : 'bg-warning text-dark'"
+                                  th:text="${inv.type}">SALES</span>
+                        </td>
+                        <td th:text="${#temporals.format(inv.dateIssued, 'dd/MM/yyyy')}">01/01/2025</td>
+                        <td>
+                            <span th:classappend="${inv.overdue} ? 'text-danger fw-bold' : ''"
+                                  th:text="${#temporals.format(inv.dateDue, 'dd/MM/yyyy')}">31/01/2025</span>
+                        </td>
+                        <td class="text-end fw-semibold">
+                            <span th:text="${#numbers.formatDecimal(inv.totalAmount, 1, 2)}">0.00</span>
+                            <small class="text-muted" th:text="${inv.currencyCode}">EUR</small>
+                        </td>
+                        <td class="text-end">
+                            <span th:classappend="${inv.amountRemaining.compareTo(T(java.math.BigDecimal).ZERO) > 0} ? 'text-danger' : 'text-success'"
+                                  th:text="${#numbers.formatDecimal(inv.amountRemaining, 1, 2)}">0.00</span>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${inv.statusBadgeClass}" th:text="${inv.status}">DRAFT</span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/portal/invoices/{id}(id=${inv.id})}" class="btn btn-sm btn-outline-primary" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="#{apikey.title}">API Keys</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center mb-4">
+        <i class="bi bi-key text-primary me-3" style="font-size: 1.8rem;"></i>
+        <div>
+            <h4 class="mb-0" th:text="#{apikey.title}">API Keys</h4>
+            <small class="text-muted" th:text="#{apikey.subtitle}">Create keys to authenticate REST API calls (X-API-Key or Bearer)</small>
+        </div>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="#{${message}}">Saved</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="#{${error}}">Error</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${newApiKey}" class="alert alert-warning alert-dismissible fade show">
+        <strong th:text="#{apikey.copyKey}">Copy this key now – it won't be shown again:</strong>
+        <div class="input-group mt-2">
+            <input type="text" class="form-control font-monospace" th:value="${newApiKey}" id="newKeyInput" readonly/>
+            <button type="button" class="btn btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('newKeyInput').value)">
+                <i class="bi bi-clipboard"></i>
+            </button>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4" sec:authorize="hasAuthority('API_KEY_CREATE')">
+        <div class="card-body">
+            <form th:action="@{/admin/api-keys/create}" method="post" class="row g-2 align-items-end">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="col-auto">
+                    <label class="form-label mb-0" th:text="#{apikey.name}">Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. Integration XYZ" required maxlength="100"/>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i><span th:text="#{apikey.create}">Create key</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent fw-semibold" th:text="#{apikey.list}">Your API keys</div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th th:text="#{apikey.name}">Name</th>
+                        <th th:text="#{apikey.prefix}">Prefix</th>
+                        <th th:text="#{apikey.columnCreated}">Created</th>
+                        <th th:text="#{apikey.lastUsed}">Last used</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${apiKeys.isEmpty()}">
+                        <td colspan="5" class="text-center text-muted py-4" th:text="#{apikey.none}">No API keys yet.</td>
+                    </tr>
+                    <tr th:each="k : ${apiKeys}">
+                        <td th:text="${k.name}">—</td>
+                        <td><code th:text="${k.keyPrefix} + '…'">ak_…</code></td>
+                        <td th:text="${#temporals.format(k.createdAt, 'dd/MM/yyyy HH:mm')}">—</td>
+                        <td th:text="${k.lastUsedAt != null} ? ${#temporals.format(k.lastUsedAt, 'dd/MM/yyyy HH:mm')} : '—'">—</td>
+                        <td class="text-end">
+                            <form th:action="@{/admin/api-keys/{id}/revoke(id=${k.id})}" method="post" class="d-inline"
+                                  th:attr="data-confirm=#{apikey.revokeConfirm}" onsubmit="return confirm(this.getAttribute('data-confirm'));"
+                                  sec:authorize="hasAuthority('API_KEY_DELETE')">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> <span th:text="#{apikey.revoke}">Revoke</span></button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4 small text-muted">
+        <p class="mb-1" th:text="#{apikey.usage}">Use the key in requests: header <code>X-API-Key: your_key</code> or <code>Authorization: Bearer your_key</code></p>
+    </div>
+
+</div>
+</body>
+</html>

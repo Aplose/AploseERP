@@ -50,6 +50,7 @@ public class DashboardController {
 
         model.addAttribute("overdueInvoices", invoiceService.findOverdue());
         model.addAttribute("upcomingEvents", agendaEventService.findUpcoming(7));
+        model.addAttribute("pageTitle", messageSource.getMessage("dashboard.title", null, LocaleContextHolder.getLocale()));
 
         return "modules/dashboard";
     }

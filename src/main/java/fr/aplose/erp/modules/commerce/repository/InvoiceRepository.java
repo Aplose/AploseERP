@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -24,6 +25,10 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     Optional<Invoice> findByIdAndTenantId(Long id, String tenantId);
 
+    List<Invoice> findByTenantIdAndThirdPartyIdOrderByDateIssuedDesc(String tenantId, Long thirdPartyId);
+
+    Optional<Invoice> findByReferenceAndTenantId(String reference, String tenantId);
+
     @Query("SELECT i FROM Invoice i WHERE i.tenantId = :tid " +
            "AND (LOWER(i.reference) LIKE LOWER(CONCAT('%',:q,'%')) " +
            "OR LOWER(i.thirdParty.name) LIKE LOWER(CONCAT('%',:q,'%')))")
@@ -36,4 +41,10 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(i.reference, 5) AS int)), 0) FROM Invoice i WHERE i.tenantId = :tid AND i.reference LIKE :prefix")
     int findMaxReferenceNumber(@Param("tid") String tenantId, @Param("prefix") String prefix);
+
+    @Query("SELECT COALESCE(SUM(i.totalAmount), 0) FROM Invoice i WHERE i.tenantId = :tid AND i.type = :type AND i.status IN ('VALIDATED','PARTIALLY_PAID','PAID') AND i.dateIssued BETWEEN :from AND :to")
+    BigDecimal sumTotalAmountByTenantAndTypeAndDateRange(@Param("tid") String tenantId, @Param("type") String type, @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+    @Query("SELECT i FROM Invoice i WHERE i.tenantId = :tid AND i.type = :type AND i.amountRemaining > 0 AND i.status IN ('VALIDATED', 'PARTIALLY_PAID') AND i.dateDue BETWEEN :from AND :to ORDER BY i.dateDue ASC")
+    List<Invoice> findForTreasuryByTypeAndDueBetween(@Param("tid") String tenantId, @Param("type") String type, @Param("from") LocalDate from, @Param("to") LocalDate to);
 }

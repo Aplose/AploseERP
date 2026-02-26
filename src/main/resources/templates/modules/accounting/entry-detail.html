@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Entry</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/accounting}">Accounting</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/accounting/entries}">Entries</a></li>
+                <li class="breadcrumb-item active" th:text="'Entry #' + ${entry.id}">Entry</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h4 class="mb-1" th:text="${entry.reference ?: 'Entry #' + entry.id}">Entry</h4>
+                <p class="text-muted mb-0" th:text="${entry.journal.code + ' - ' + entry.journal.label}">Journal</p>
+                <p class="text-muted mb-0" th:text="${#temporals.format(entry.entryDate, 'dd/MM/yyyy')}">Date</p>
+                <p th:if="${entry.description}" class="mb-0" th:text="${entry.description}">Description</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent"><h5 class="mb-0">Lines</h5></div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Account</th>
+                        <th>Label</th>
+                        <th class="text-end">Debit</th>
+                        <th class="text-end">Credit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(entry.lines)}">
+                        <td colspan="4" class="text-center text-muted py-4">No lines.</td>
+                    </tr>
+                    <tr th:each="line : ${entry.lines}">
+                        <td th:text="${line.account.code}">Account</td>
+                        <td th:text="${line.account.label}">Label</td>
+                        <td class="text-end" th:text="${line.debit.compareTo(T(java.math.BigDecimal).ZERO) > 0} ? #numbers.formatDecimal(line.debit, 1, 2) : '—'">0.00</td>
+                        <td class="text-end" th:text="${line.credit.compareTo(T(java.math.BigDecimal).ZERO) > 0} ? #numbers.formatDecimal(line.credit, 1, 2) : '—'">0.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

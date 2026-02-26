@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${contract.id != null} ? 'Edit contract' : 'New contract'">Contract</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/hr}">HR</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/hr/contracts}">Contracts</a></li>
+                <li class="breadcrumb-item active" th:text="${contract.id != null} ? 'Edit' : 'New contract'">Form</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0" th:text="${contract.id != null} ? 'Edit contract' : 'New contract'">Contract</h4>
+    </div>
+
+    <form th:action="${contract.id != null} ? @{/hr/contracts/{id}(id=${contract.id})} : @{/hr/contracts}" th:object="${contract}" method="post" class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                <ul class="mb-0">
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Error</li>
+                </ul>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Employee <span class="text-danger">*</span></label>
+                    <select name="employeeId" class="form-select" required th:disabled="${contract.id != null}">
+                        <option value="">— Select —</option>
+                        <option th:each="e : ${employees}" th:value="${e.id}" th:text="${e.displayName}"
+                                th:selected="${contract.employee != null && contract.employee.id == e.id}">Employee</option>
+                    </select>
+                    <input th:if="${contract.id != null}" type="hidden" name="employeeId" th:value="${contract.employee.id}"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Contract type <span class="text-danger">*</span></label>
+                    <select class="form-select" th:field="*{contractType}">
+                        <option value="CDI">CDI</option>
+                        <option value="CDD">CDD</option>
+                        <option value="INTERIM">Interim</option>
+                        <option value="FREELANCE">Freelance</option>
+                        <option value="STAGE">Stage</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Start date <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" th:field="*{startDate}" required/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">End date</label>
+                    <input type="date" class="form-control" th:field="*{endDate}"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" th:field="*{status}">
+                        <option value="ACTIVE">Active</option>
+                        <option value="ENDED">Ended</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" th:field="*{notes}" rows="2"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between">
+            <a th:href="@{/hr/contracts}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" th:text="${contract.id != null} ? 'Update' : 'Create'">Save</button>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

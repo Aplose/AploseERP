@@ -4,7 +4,6 @@ import fr.aplose.erp.dictionary.DictionaryType;
 import fr.aplose.erp.dictionary.service.DictionaryService;
 import fr.aplose.erp.modules.contact.entity.ContactThirdPartyLink;
 import fr.aplose.erp.modules.contact.repository.ContactThirdPartyLinkRepository;
-import fr.aplose.erp.modules.contact.service.ContactService;
 import fr.aplose.erp.modules.extrafield.entity.ExtraFieldDefinition;
 import fr.aplose.erp.modules.extrafield.service.ExtraFieldService;
 import fr.aplose.erp.modules.thirdparty.service.ThirdPartyService;
@@ -34,7 +33,6 @@ import java.util.Map;
 public class ThirdPartyController {
 
     private final ThirdPartyService service;
-    private final ContactService contactService;
     private final ContactThirdPartyLinkRepository contactThirdPartyLinkRepository;
     private final DictionaryService dictionaryService;
     private final ExtraFieldService extraFieldService;

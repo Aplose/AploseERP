@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Leave report</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/reporting}">Reporting</a></li>
+                <li class="breadcrumb-item active">Leave requests</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">Leave requests summary</h4>
+    </div>
+
+    <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
+        <a th:href="@{/reporting/leave}" class="btn btn-sm" th:classappend="${#strings.isEmpty(status)} ? 'btn-primary' : 'btn-outline-secondary'">All</a>
+        <a th:href="@{/reporting/leave(status='SUBMITTED')}" class="btn btn-sm" th:classappend="${status == 'SUBMITTED'} ? 'btn-primary' : 'btn-outline-secondary'">Submitted</a>
+        <a th:href="@{/reporting/leave(status='APPROVED')}" class="btn btn-sm" th:classappend="${status == 'APPROVED'} ? 'btn-primary' : 'btn-outline-secondary'">Approved</a>
+        <a th:href="@{/reporting/leave(status='DENIED')}" class="btn btn-sm" th:classappend="${status == 'DENIED'} ? 'btn-primary' : 'btn-outline-secondary'">Denied</a>
+        <div class="btn-group ms-2" sec:authorize="hasAuthority('REPORT_EXPORT')">
+            <span class="align-self-center me-2 small text-muted">Export:</span>
+            <a th:href="@{/reporting/leave/export(format='csv', status=${status})}" class="btn btn-outline-secondary btn-sm">CSV</a>
+            <a th:href="@{/reporting/leave/export(format='excel', status=${status})}" class="btn btn-outline-secondary btn-sm">Excel</a>
+            <a th:href="@{/reporting/leave/export(format='pdf', status=${status})}" class="btn btn-outline-secondary btn-sm">PDF</a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Requester</th>
+                        <th>Type</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(leaveRequests)}">
+                        <td colspan="6" class="text-center text-muted py-5">No leave requests.</td>
+                    </tr>
+                    <tr th:each="lr : ${leaveRequests}">
+                        <td th:text="${lr.requester != null} ? ${lr.requester.displayName} : '—'">—</td>
+                        <td th:text="${lr.leaveType != null} ? ${lr.leaveType.label} : '—'">—</td>
+                        <td th:text="${#temporals.format(lr.dateStart, 'dd/MM/yyyy')}">Date</td>
+                        <td th:text="${#temporals.format(lr.dateEnd, 'dd/MM/yyyy')}">Date</td>
+                        <td><span class="badge bg-secondary" th:text="${lr.status}">Status</span></td>
+                        <td class="text-end">
+                            <a th:href="@{/leave-requests/{id}(id=${lr.id})}" class="btn btn-sm btn-outline-secondary">View</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

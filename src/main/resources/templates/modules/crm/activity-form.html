@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${activity.id != null} ? 'Edit activity' : 'New activity'">Activity</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/crm/activities}">CRM activities</a></li>
+                <li class="breadcrumb-item active" th:text="${activity.id != null} ? 'Edit' : 'New'">Form</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0" th:text="${activity.id != null} ? 'Edit activity' : 'New activity'">Activity</h4>
+    </div>
+
+    <form th:action="${activity.id != null} ? @{/crm/activities/{id}(id=${activity.id})} : @{/crm/activities}" th:object="${activity}" method="post" class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                <ul class="mb-0">
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Error</li>
+                </ul>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Third party <span class="text-danger">*</span></label>
+                    <select name="thirdPartyId" class="form-select" required th:disabled="${activity.id != null}">
+                        <option value="">— Select —</option>
+                        <option th:each="tp : ${thirdParties}" th:value="${tp.id}" th:text="${tp.name}"
+                                th:selected="${activity.thirdParty != null && activity.thirdParty.id == tp.id}">TP</option>
+                    </select>
+                    <input th:if="${activity.id != null && activity.thirdParty != null}" type="hidden" name="thirdPartyId" th:value="${activity.thirdParty.id}"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Contact</label>
+                    <select name="contactId" class="form-select">
+                        <option value="">— None —</option>
+                        <option th:each="c : ${contacts}" th:value="${c.id}" th:text="${c.fullName}"
+                                th:selected="${activity.contact != null && activity.contact.id == c.id}">Contact</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Type <span class="text-danger">*</span></label>
+                    <select class="form-select" th:field="*{activityType}">
+                        <option value="CALL">Call</option>
+                        <option value="MEETING">Meeting</option>
+                        <option value="EMAIL">Email</option>
+                        <option value="TASK">Task</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Assigned to</label>
+                    <select name="assignedToId" class="form-select">
+                        <option value="">— None —</option>
+                        <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.displayName}"
+                                th:selected="${activity.assignedTo != null && activity.assignedTo.id == u.id}">User</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Subject <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" th:field="*{subject}" required maxlength="500"/>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" th:field="*{description}" rows="3"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Due date</label>
+                    <input type="date" class="form-control" th:field="*{dueDate}"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Due time</label>
+                    <input type="time" class="form-control" th:field="*{dueTime}"/>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between">
+            <a th:href="@{/crm/activities(thirdPartyId=${activity.thirdParty != null ? activity.thirdParty.id : thirdPartyId})}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" th:text="${activity.id != null} ? 'Update' : 'Create'">Save</button>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

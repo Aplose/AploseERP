@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Overdue invoices</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/reporting}">Reporting</a></li>
+                <li class="breadcrumb-item active">Overdue invoices</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">Overdue invoices</h4>
+        <small class="text-muted">Invoices past due date with remaining amount</small>
+        <div class="btn-group mt-2" sec:authorize="hasAuthority('REPORT_EXPORT')">
+            <span class="align-self-center me-2 small text-muted">Export:</span>
+            <a th:href="@{/reporting/overdue-invoices/export(format='csv')}" class="btn btn-outline-secondary btn-sm">CSV</a>
+            <a th:href="@{/reporting/overdue-invoices/export(format='excel')}" class="btn btn-outline-secondary btn-sm">Excel</a>
+            <a th:href="@{/reporting/overdue-invoices/export(format='pdf')}" class="btn btn-outline-secondary btn-sm">PDF</a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Reference</th>
+                        <th>Client</th>
+                        <th>Due date</th>
+                        <th class="text-end">Remaining</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(invoices)}">
+                        <td colspan="5" class="text-center text-muted py-5">No overdue invoices.</td>
+                    </tr>
+                    <tr th:each="inv : ${invoices}">
+                        <td>
+                            <a th:href="@{/invoices/{id}(id=${inv.id})}" th:text="${inv.reference}">INV-001</a>
+                        </td>
+                        <td th:text="${inv.thirdParty.name}">Client</td>
+                        <td th:text="${#temporals.format(inv.dateDue, 'dd/MM/yyyy')}">Date</td>
+                        <td class="text-end text-danger" th:text="${#numbers.formatDecimal(inv.amountRemaining, 1, 2) + ' ' + inv.currencyCode}">0.00 EUR</td>
+                        <td class="text-end">
+                            <a th:href="@{/invoices/{id}(id=${inv.id})}" class="btn btn-sm btn-outline-secondary">View</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

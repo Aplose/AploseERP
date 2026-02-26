@@ -19,6 +19,8 @@ public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
 
     Optional<SalesOrder> findByIdAndTenantId(Long id, String tenantId);
 
+    Optional<SalesOrder> findByReferenceAndTenantId(String reference, String tenantId);
+
     @Query("SELECT o FROM SalesOrder o WHERE o.tenantId = :tid " +
            "AND (LOWER(o.reference) LIKE LOWER(CONCAT('%',:q,'%')) " +
            "OR LOWER(o.thirdParty.name) LIKE LOWER(CONCAT('%',:q,'%')))")

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${activity.subject}">Activity</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/crm/activities}">CRM activities</a></li>
+                <li class="breadcrumb-item active" th:text="${activity.subject}">Subject</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-start">
+            <h4 class="mb-0" th:text="${activity.subject}">Subject</h4>
+            <div class="d-flex gap-2">
+                <form th:action="@{/crm/activities/{id}/complete(id=${activity.id})}" method="post" class="d-inline">
+                    <input type="hidden" name="completed" th:value="${activity.completedAt == null}"/>
+                    <button type="submit" class="btn btn-outline-success" sec:authorize="hasAuthority('CRM_ACTIVITY_UPDATE')"
+                            th:text="${activity.completedAt == null} ? 'Mark done' : 'Reopen'">Mark done</button>
+                </form>
+                <a th:href="@{/crm/activities/{id}/edit(id=${activity.id})}" class="btn btn-outline-primary" sec:authorize="hasAuthority('CRM_ACTIVITY_UPDATE')">Edit</a>
+                <form th:action="@{/crm/activities/{id}/delete(id=${activity.id})}" method="post" class="d-inline" sec:authorize="hasAuthority('CRM_ACTIVITY_DELETE')"
+                      onsubmit="return confirm('Delete this activity?');">
+                    <button type="submit" class="btn btn-outline-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}">Message</div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Type</dt>
+                <dd class="col-sm-9"><span class="badge bg-secondary" th:text="${activity.activityType}">Type</span></dd>
+                <dt class="col-sm-3">Third party</dt>
+                <dd class="col-sm-9">
+                    <a th:if="${activity.thirdParty != null}" th:href="@{/third-parties/{id}(id=${activity.thirdParty.id})}" th:text="${activity.thirdParty.name}">TP</a>
+                    <span th:unless="${activity.thirdParty != null}">—</span>
+                </dd>
+                <dt class="col-sm-3">Contact</dt>
+                <dd class="col-sm-9" th:text="${activity.contact != null} ? ${activity.contact.fullName} : '—'">—</dd>
+                <dt class="col-sm-3">Due</dt>
+                <dd class="col-sm-9">
+                    <span th:if="${activity.dueDate != null}" th:text="${#temporals.format(activity.dueDate, 'dd/MM/yyyy')}">—</span>
+                    <span th:if="${activity.dueDate != null && activity.dueTime != null}" th:text="' ' + ${#temporals.format(activity.dueTime, 'HH:mm')}">—</span>
+                    <span th:unless="${activity.dueDate != null}">—</span>
+                </dd>
+                <dt class="col-sm-3">Assigned to</dt>
+                <dd class="col-sm-9" th:text="${activity.assignedTo != null} ? ${activity.assignedTo.displayName} : '—'">—</dd>
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9">
+                    <span class="badge bg-success" th:if="${activity.completedAt != null}">Done</span>
+                    <span class="badge bg-warning text-dark" th:if="${activity.completedAt == null && activity.overdue}">Overdue</span>
+                    <span class="badge bg-secondary" th:if="${activity.completedAt == null && !activity.overdue}">Pending</span>
+                </dd>
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9" th:text="${activity.description} ?: '—'">—</dd>
+            </dl>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

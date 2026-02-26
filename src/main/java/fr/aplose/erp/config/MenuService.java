@@ -27,7 +27,12 @@ public class MenuService {
             new SettingsEntryDef("/admin/module-catalogue", "nocode.catalogue.title", "bi-collection", "TENANT_READ"),
             new SettingsEntryDef("/admin/dictionaries", "nav.dictionaries", "bi-journal-text", "TENANT_READ"),
             new SettingsEntryDef("/admin/extrafields", "nav.extrafields", "bi-sliders", "EXTRAFIELD_ADMIN"),
-            new SettingsEntryDef("/admin/email-templates", "nav.emailTemplates", "bi-envelope", "ROLE_SUPER_ADMIN")
+            new SettingsEntryDef("/admin/email-templates", "nav.emailTemplates", "bi-envelope", "ROLE_SUPER_ADMIN"),
+            new SettingsEntryDef("/admin/api-keys", "apikey.title", "bi-key", "API_KEY_READ"),
+            new SettingsEntryDef("/admin/webhooks", "webhook.title", "bi-link-45deg", "WEBHOOK_READ"),
+            new SettingsEntryDef("/admin/public-forms", "publicform.admin.title", "bi-input-cursor", "PUBLIC_FORM_READ"),
+            new SettingsEntryDef("/admin/ai", "ai.admin.title", "bi-stars", "AI_USE"),
+            new SettingsEntryDef("/admin/dolibarr-import", "dolibarr.import.title", "bi-cloud-download", "DOLIBARR_IMPORT")
     );
 
     /**

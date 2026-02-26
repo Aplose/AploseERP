@@ -2,7 +2,6 @@ package fr.aplose.erp.modules.contact.web;
 
 import fr.aplose.erp.dictionary.DictionaryType;
 import fr.aplose.erp.dictionary.service.DictionaryService;
-import fr.aplose.erp.modules.contact.entity.Contact;
 import fr.aplose.erp.modules.contact.entity.ContactThirdPartyLink;
 import fr.aplose.erp.modules.contact.service.ContactService;
 import fr.aplose.erp.modules.contact.web.dto.ContactDto;

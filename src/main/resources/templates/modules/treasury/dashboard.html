@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title>Trésorerie</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h4 class="mb-0"><i class="bi bi-cash-stack text-primary me-2"></i>Trésorerie</h4>
+        <form th:action="@{/treasury}" method="get" class="d-flex align-items-center gap-2">
+            <label class="form-label mb-0">Mois</label>
+            <select name="months" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                <option value="3" th:selected="${months == 3}">3 mois</option>
+                <option value="6" th:selected="${months == 6}">6 mois</option>
+                <option value="12" th:selected="${months == 12}">12 mois</option>
+                <option value="24" th:selected="${months == 24}">24 mois</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Période</th>
+                            <th class="text-end">Encaissements prévus</th>
+                            <th class="text-end">Décaissements prévus</th>
+                            <th class="text-end">Solde période</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="e : ${forecast}">
+                            <td th:text="${e.periodLabel}">2025-02</td>
+                            <td class="text-end text-success" th:text="${#numbers.formatDecimal(e.inflows, 1, 2) + ' EUR'}">0</td>
+                            <td class="text-end text-danger" th:text="${#numbers.formatDecimal(e.outflows, 1, 2) + ' EUR'}">0</td>
+                            <td class="text-end fw-semibold" th:classappend="${e.balance != null && e.balance.signum() >= 0} ? 'text-success' : 'text-danger'"
+                                th:text="${#numbers.formatDecimal(e.balance, 1, 2) + ' EUR'}">0</td>
+                            <td>
+                                <a th:href="@{/treasury/inflows(from=${e.periodStart}, to=${e.periodEnd})}" class="btn btn-sm btn-outline-secondary">Détail enc.</a>
+                                <a th:href="@{/treasury/outflows(from=${e.periodStart}, to=${e.periodEnd})}" class="btn btn-sm btn-outline-secondary">Détail déc.</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

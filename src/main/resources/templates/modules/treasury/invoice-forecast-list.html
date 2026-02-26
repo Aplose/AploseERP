@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${title}">Forecast</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/treasury}">Trésorerie</a></li>
+                <li class="breadcrumb-item active" th:text="${title}">List</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0" th:text="${title}">Encaissements / Décaissements</h4>
+        <small class="text-muted" th:text="${#temporals.format(from, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(to, 'dd/MM/yyyy')}">Period</small>
+        <p class="mt-2 mb-0 fw-semibold" th:text="'Total : ' + ${#numbers.formatDecimal(total, 1, 2)} + ' EUR'">Total</p>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Référence</th>
+                        <th>Tiers</th>
+                        <th>Échéance</th>
+                        <th class="text-end">Restant dû</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(invoices)}">
+                        <td colspan="5" class="text-center text-muted py-4">Aucune facture sur la période.</td>
+                    </tr>
+                    <tr th:each="inv : ${invoices}">
+                        <td><a th:href="@{/invoices/{id}(id=${inv.id})}" th:text="${inv.reference}">INV-001</a></td>
+                        <td th:text="${inv.thirdParty != null ? inv.thirdParty.name : '—'}">—</td>
+                        <td th:text="${#temporals.format(inv.dateDue, 'dd/MM/yyyy')}">—</td>
+                        <td class="text-end" th:text="${#numbers.formatDecimal(inv.amountRemaining, 1, 2) + ' ' + inv.currencyCode}">0 EUR</td>
+                        <td class="text-end"><a th:href="@{/invoices/{id}(id=${inv.id})}" class="btn btn-sm btn-outline-secondary">Voir</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

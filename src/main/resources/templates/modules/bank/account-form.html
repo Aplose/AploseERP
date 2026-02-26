@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${account.id != null} ? 'Edit account' : 'New account'">Bank account</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/bank}">Bank</a></li>
+                <li class="breadcrumb-item active" th:text="${account.id != null} ? 'Edit' : 'New account'">Form</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0" th:text="${account.id != null} ? 'Edit bank account' : 'New bank account'">Bank account</h4>
+    </div>
+
+    <form th:action="${account.id != null} ? @{/bank/accounts/{id}(id=${account.id})} : @{/bank/accounts}"
+          th:object="${account}" method="post" class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                <ul class="mb-0">
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Error</li>
+                </ul>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" th:field="*{name}" required maxlength="255"
+                           placeholder="e.g. Main current account"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Currency</label>
+                    <select class="form-select" th:field="*{currencyCode}">
+                        <option th:each="c : ${currencies}" th:value="${c.code}" th:text="${c.code + ' - ' + c.name}">EUR</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">IBAN</label>
+                    <input type="text" class="form-control" th:field="*{iban}" maxlength="34"
+                           placeholder="International Bank Account Number"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">BIC</label>
+                    <input type="text" class="form-control" th:field="*{bic}" maxlength="11"
+                           placeholder="SWIFT/BIC code"/>
+                </div>
+                <div class="col-12" th:if="${account.id != null}">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" th:field="*{active}" id="active"/>
+                        <label class="form-check-label" for="active">Active</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between">
+            <a th:href="@{/bank}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" th:text="${account.id != null} ? 'Update' : 'Create'">Save</button>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

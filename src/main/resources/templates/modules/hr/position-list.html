@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Job positions</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/hr}">HR</a></li>
+                <li class="breadcrumb-item active">Job positions</li>
+            </ol>
+        </nav>
+        <a th:href="@{/hr/positions/new}" class="btn btn-primary" sec:authorize="hasAuthority('HR_CREATE')">
+            <i class="bi bi-plus-lg me-1"></i>New position
+        </a>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show" th:text="${message}">Message</div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Code</th>
+                        <th>Label</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(positions)}">
+                        <td colspan="5" class="text-center text-muted py-5">No job positions.</td>
+                    </tr>
+                    <tr th:each="p : ${positions}">
+                        <td class="fw-semibold" th:text="${p.code}">Code</td>
+                        <td th:text="${p.label}">Label</td>
+                        <td th:text="${p.department} ?: '—'">—</td>
+                        <td><span class="badge" th:classappend="${p.active} ? 'bg-success' : 'bg-secondary'" th:text="${p.active} ? 'Active' : 'Inactive'">Status</span></td>
+                        <td class="text-end">
+                            <a th:href="@{/hr/positions/{id}/edit(id=${p.id})}" class="btn btn-sm btn-outline-primary" sec:authorize="hasAuthority('HR_UPDATE')">Edit</a>
+                            <form th:action="@{/hr/positions/{id}/delete(id=${p.id})}" method="post" class="d-inline" sec:authorize="hasAuthority('HR_DELETE')"
+                                  onsubmit="return confirm('Delete this position?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

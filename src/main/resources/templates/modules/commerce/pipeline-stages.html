@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Pipeline stages</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a th:href="@{/pipeline}">Pipeline</a></li>
+                <li class="breadcrumb-item active">Stages</li>
+            </ol>
+        </nav>
+        <a th:href="@{/pipeline/stages/new}" class="btn btn-primary">New stage</a>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}">Message</div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Code</th>
+                        <th>Label</th>
+                        <th>Order</th>
+                        <th>Probability %</th>
+                        <th>Closed</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(stages)}">
+                        <td colspan="6" class="text-center text-muted py-5">No stages. Create one to organize your pipeline.</td>
+                    </tr>
+                    <tr th:each="s : ${stages}">
+                        <td th:text="${s.code}">Code</td>
+                        <td th:text="${s.label}">Label</td>
+                        <td th:text="${s.sortOrder}">0</td>
+                        <td th:text="${s.probability}">0</td>
+                        <td><span class="badge" th:classappend="${s.closed} ? 'bg-secondary' : 'bg-success'" th:text="${s.closed} ? 'Yes' : 'No'">No</span></td>
+                        <td class="text-end">
+                            <a th:href="@{/pipeline/stages/{id}/edit(id=${s.id})}" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form th:action="@{/pipeline/stages/{id}/delete(id=${s.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('Delete this stage? Proposals will be unassigned.');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

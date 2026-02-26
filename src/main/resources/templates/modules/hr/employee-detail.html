@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${employee.displayName}">Employee</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/hr}">HR</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/hr/employees}">Employees</a></li>
+                <li class="breadcrumb-item active" th:text="${employee.displayName}">Name</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-start">
+            <h4 class="mb-0" th:text="${employee.displayName}">Employee</h4>
+            <div class="d-flex gap-2">
+                <a th:href="@{/hr/employees/{id}/edit(id=${employee.id})}" class="btn btn-outline-primary" sec:authorize="hasAuthority('HR_UPDATE')">Edit</a>
+                <form th:action="@{/hr/employees/{id}/delete(id=${employee.id})}" method="post" class="d-inline" sec:authorize="hasAuthority('HR_DELETE')"
+                      onsubmit="return confirm('Delete this employee?');">
+                    <button type="submit" class="btn btn-outline-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}">Message</div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-transparent">Details</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Employee number</dt>
+                        <dd class="col-sm-8" th:text="${employee.employeeNumber} ?: '—'">—</dd>
+                        <dt class="col-sm-4">Job position</dt>
+                        <dd class="col-sm-8" th:text="${employee.jobPosition != null} ? ${employee.jobPosition.label} : '—'">—</dd>
+                        <dt class="col-sm-4">Manager</dt>
+                        <dd class="col-sm-8">
+                            <a th:if="${employee.manager != null}" th:href="@{/hr/employees/{id}(id=${employee.manager.id})}" th:text="${employee.manager.displayName}">Manager</a>
+                            <span th:unless="${employee.manager != null}">—</span>
+                        </dd>
+                        <dt class="col-sm-4">Hire date</dt>
+                        <dd class="col-sm-8" th:text="${employee.hireDate != null} ? ${#temporals.format(employee.hireDate, 'dd/MM/yyyy')} : '—'">—</dd>
+                        <dt class="col-sm-4">Termination date</dt>
+                        <dd class="col-sm-8" th:text="${employee.terminationDate != null} ? ${#temporals.format(employee.terminationDate, 'dd/MM/yyyy')} : '—'">—</dd>
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8"><span class="badge bg-secondary" th:text="${employee.status}">Status</span></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <span>Contracts</span>
+            <a th:href="@{/hr/contracts/new(employeeId=${employee.id})}" class="btn btn-sm btn-primary" sec:authorize="hasAuthority('HR_CREATE')">Add contract</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Type</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(contracts)}">
+                        <td colspan="5" class="text-center text-muted py-3">No contracts.</td>
+                    </tr>
+                    <tr th:each="c : ${contracts}">
+                        <td th:text="${c.contractType}">Type</td>
+                        <td th:text="${#temporals.format(c.startDate, 'dd/MM/yyyy')}">Start</td>
+                        <td th:text="${c.endDate != null} ? ${#temporals.format(c.endDate, 'dd/MM/yyyy')} : '—'">End</td>
+                        <td><span class="badge bg-secondary" th:text="${c.status}">Status</span></td>
+                        <td class="text-end">
+                            <a th:href="@{/hr/contracts/{id}/edit(id=${c.id})}" class="btn btn-sm btn-outline-secondary" sec:authorize="hasAuthority('HR_UPDATE')">Edit</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

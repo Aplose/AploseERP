@@ -177,7 +177,14 @@
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <div class="col-md-4">
                             <label class="form-label small">Description</label>
-                            <input type="text" class="form-control form-control-sm" th:field="*{description}" required/>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" id="invoiceLineDescription" th:field="*{description}" required/>
+                                <button type="button" class="btn btn-outline-secondary ai-suggest-btn" title="Suggérer un libellé avec l'IA"
+                                        sec:authorize="hasAuthority('AI_USE')"
+                                        th:attr="data-csrf-token=${_csrf.token}, data-csrf-header=${_csrf.headerName}">
+                                    <i class="bi bi-stars"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label small">Qty</label>

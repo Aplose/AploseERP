@@ -6,7 +6,6 @@ import fr.aplose.erp.modules.contact.repository.ContactRepository;
 import fr.aplose.erp.modules.contact.repository.ContactThirdPartyLinkRepository;
 import fr.aplose.erp.modules.contact.web.dto.ContactDto;
 import fr.aplose.erp.modules.contact.web.dto.ContactThirdPartyLinkDto;
-import fr.aplose.erp.modules.thirdparty.entity.ThirdParty;
 import fr.aplose.erp.modules.thirdparty.repository.ThirdPartyRepository;
 import fr.aplose.erp.tenant.context.TenantContext;
 import lombok.RequiredArgsConstructor;

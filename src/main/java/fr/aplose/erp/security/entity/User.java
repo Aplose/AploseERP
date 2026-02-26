@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 
+import fr.aplose.erp.modules.thirdparty.entity.ThirdParty;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -87,6 +89,10 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leave_validator_id")
     private User leaveValidator;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "third_party_id")
+    private ThirdParty thirdParty;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

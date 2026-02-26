@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="#{dolibarr.import.logs}">Logs d'import</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center mb-4">
+        <a th:href="@{/admin/dolibarr-import}" class="btn btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h4 class="mb-0" th:text="#{dolibarr.import.logs}">Logs d'import</h4>
+            <small class="text-muted">
+                <span th:text="${#temporals.format(run.startedAt, 'dd/MM/yyyy HH:mm')}">...</span>
+                — <span th:text="${run.status}">...</span>
+            </small>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th th:text="#{dolibarr.import.log.step}">Étape</th>
+                        <th th:text="#{dolibarr.import.log.level}">Niveau</th>
+                        <th th:text="#{dolibarr.import.log.externalId}">ID externe</th>
+                        <th th:text="#{dolibarr.import.log.message}">Message</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="log : ${logs}" th:classappend="${log.level == 'ERROR'} ? 'table-danger' : (${log.level == 'WARN'} ? 'table-warning' : (${log.level == 'SKIP'} ? 'table-secondary' : ''))">
+                        <td th:text="${log.step}">...</td>
+                        <td><span class="badge" th:classappend="${log.level == 'ERROR'} ? 'bg-danger' : (${log.level == 'WARN'} ? 'bg-warning' : (${log.level == 'SKIP'} ? 'bg-secondary' : 'bg-info'))" th:text="${log.level}">...</span></td>
+                        <td th:text="${log.externalId}">...</td>
+                        <td th:text="${log.message}">...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

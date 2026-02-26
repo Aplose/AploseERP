@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="#{automation.title}">Automation rules</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0"><i class="bi bi-lightning text-primary me-2"></i><span th:text="#{automation.title}">Automation rules</span></h4>
+            <small class="text-muted" th:text="#{automation.subtitle}">If... then... rules on entity events</small>
+        </div>
+        <a th:href="@{/automation/rules/new}" class="btn btn-primary" sec:authorize="hasAuthority('AUTOMATION_CREATE')">
+            <i class="bi bi-plus-lg me-1"></i><span th:text="#{automation.new}">New rule</span>
+        </a>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="#{${message}}">Saved</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th th:text="#{automation.name}">Name</th>
+                        <th th:text="#{automation.trigger}">Trigger</th>
+                        <th th:text="#{automation.conditions}">Conditions</th>
+                        <th th:text="#{automation.action}">Action</th>
+                        <th th:text="#{automation.enabled}">Enabled</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${rules.isEmpty()}">
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-lightning fs-1 d-block mb-2"></i>
+                            <span th:text="#{automation.noRules}">No rules yet.</span>
+                        </td>
+                    </tr>
+                    <tr th:each="r : ${rules}">
+                        <td>
+                            <span class="fw-semibold" th:text="${r.name}">Rule 1</span>
+                            <div class="small text-muted" th:if="${r.description}" th:text="${r.description}">—</div>
+                        </td>
+                        <td><span class="badge bg-secondary" th:text="${r.triggerEntity} + ' / ' + ${r.triggerEvent}">INVOICE / VALIDATED</span></td>
+                        <td class="small">
+                            <span th:if="${r.conditionStatus}" th:text="'Status: ' + ${r.conditionStatus}">—</span>
+                            <span th:if="${r.conditionAmountMin != null or r.conditionAmountMax != null}" th:text="${'Amount: ' + (r.conditionAmountMin != null ? #numbers.formatDecimal(r.conditionAmountMin,1,2) : '?') + ' - ' + (r.conditionAmountMax != null ? #numbers.formatDecimal(r.conditionAmountMax,1,2) : '?')}">—</span>
+                            <span th:if="${r.conditionThirdPartyId != null}" th:text="'Third party: ' + ${r.conditionThirdPartyId}">—</span>
+                            <span th:if="${r.conditionStatus == null and r.conditionAmountMin == null and r.conditionAmountMax == null and r.conditionThirdPartyId == null}">—</span>
+                        </td>
+                        <td><span class="badge bg-info" th:text="${r.actionType}">LOG</span></td>
+                        <td><span class="badge" th:classappend="${r.enabled} ? 'bg-success' : 'bg-secondary'" th:text="${r.enabled} ? #{automation.yes} : #{automation.no}">Yes</span></td>
+                        <td class="text-end">
+                            <a th:href="@{/automation/rules/{id}/edit(id=${r.id})}" class="btn btn-sm btn-outline-primary" sec:authorize="hasAuthority('AUTOMATION_UPDATE')"><i class="bi bi-pencil"></i></a>
+                            <form th:action="@{/automation/rules/{id}/delete(id=${r.id})}" method="post" class="d-inline" sec:authorize="hasAuthority('AUTOMATION_DELETE')"
+                                  th:attr="data-confirm=#{automation.deleteConfirm}" onsubmit="return confirm(this.getAttribute('data-confirm') || 'Delete?');">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

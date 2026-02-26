@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${invoice.reference}">Invoice</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/portal}"><span th:text="#{portal.dashboard.title}">Portal</span></a></li>
+                <li class="breadcrumb-item"><a th:href="@{/portal/invoices}"><span th:text="#{portal.invoices}">Invoices</span></a></li>
+                <li class="breadcrumb-item active" th:text="${invoice.reference}">INV-001</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">
+            <i class="bi bi-receipt me-2 text-primary"></i>
+            <span th:text="${invoice.reference}">INV-001</span>
+            <span class="badge ms-2" th:classappend="${invoice.statusBadgeClass}" th:text="${invoice.status}">DRAFT</span>
+            <span class="badge bg-danger ms-1" th:if="${invoice.overdue}">OVERDUE</span>
+        </h4>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent fw-semibold">
+                    <i class="bi bi-info-circle me-2 text-primary"></i><span th:text="#{portal.details}">Details</span>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td class="text-muted" th:text="#{invoice.label.type}">Type</td>
+                            <td th:text="${invoice.type}">SALES</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted" th:text="#{invoice.label.dateIssued}">Date issued</td>
+                            <td th:text="${#temporals.format(invoice.dateIssued, 'dd/MM/yyyy')}">01/01/2025</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted" th:text="#{invoice.label.dateDue}">Due date</td>
+                            <td th:classappend="${invoice.overdue} ? 'text-danger fw-bold' : ''"
+                                th:text="${#temporals.format(invoice.dateDue, 'dd/MM/yyyy')}">31/01/2025</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted" th:text="#{invoice.label.currency}">Currency</td>
+                            <td th:text="${invoice.currencyCode}">EUR</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent fw-semibold">
+                    <i class="bi bi-calculator me-2 text-primary"></i><span th:text="#{portal.totals}">Totals</span>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td class="text-muted" th:text="#{invoice.label.subtotal}">Subtotal</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(invoice.subtotal, 1, 2)}">0.00</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted" th:text="#{invoice.label.vat}">VAT</td>
+                            <td class="text-end" th:text="${#numbers.formatDecimal(invoice.vatAmount, 1, 2)}">0.00</td>
+                        </tr>
+                        <tr class="table-active fw-bold">
+                            <td th:text="#{invoice.label.totalAmount}">Total</td>
+                            <td class="text-end">
+                                <span th:text="${#numbers.formatDecimal(invoice.totalAmount, 1, 2)}">0.00</span>
+                                <small th:text="${invoice.currencyCode}">EUR</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted" th:text="#{invoice.label.amountPaid}">Paid</td>
+                            <td class="text-end text-success" th:text="${#numbers.formatDecimal(invoice.amountPaid, 1, 2)}">0.00</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td class="text-danger" th:text="#{invoice.label.amountRemaining}">Remaining</td>
+                            <td class="text-end text-danger" th:text="${#numbers.formatDecimal(invoice.amountRemaining, 1, 2)}">0.00</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent fw-semibold">
+                    <i class="bi bi-list-ol me-2 text-primary"></i><span th:text="#{invoice.label.lines}">Lines</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th th:text="#{invoice.line.description}">Description</th>
+                                <th class="text-end" th:text="#{invoice.line.quantity}">Qty</th>
+                                <th class="text-end" th:text="#{invoice.line.unitPrice}">Unit price</th>
+                                <th class="text-end" th:text="#{invoice.line.vat}">VAT</th>
+                                <th class="text-end" th:text="#{invoice.line.total}">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${invoice.lines.isEmpty()}">
+                                <td colspan="6" class="text-center text-muted py-4"><span th:text="#{portal.noLines}">No lines</span></td>
+                            </tr>
+                            <tr th:each="line, iter : ${invoice.lines}">
+                                <td th:text="${iter.index + 1}">1</td>
+                                <td th:text="${line.description}">Description</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(line.quantity, 1, 2)}">1.00</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(line.unitPrice, 1, 2)}">0.00</td>
+                                <td class="text-end" th:text="${#numbers.formatDecimal(line.vatRate * 100, 1, 1)} + '%'">0%</td>
+                                <td class="text-end fw-semibold" th:text="${#numbers.formatDecimal(line.lineTotal, 1, 2)}">0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12" th:if="${!invoice.payments.isEmpty()}">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent fw-semibold">
+                    <i class="bi bi-cash-stack me-2 text-success"></i><span th:text="#{payment.title}">Payments</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th th:text="#{payment.label.date}">Date</th>
+                                <th th:text="#{payment.label.method}">Method</th>
+                                <th th:text="#{payment.label.reference}">Reference</th>
+                                <th class="text-end" th:text="#{payment.label.amount}">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="pay : ${invoice.payments}">
+                                <td th:text="${#temporals.format(pay.paymentDate, 'dd/MM/yyyy')}">01/01/2025</td>
+                                <td th:text="${pay.paymentMethod}">BANK_TRANSFER</td>
+                                <td th:text="${pay.reference ?: '—'}">—</td>
+                                <td class="text-end fw-semibold text-success"
+                                    th:text="${#numbers.formatDecimal(pay.amount, 1, 2)}">0.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <a th:href="@{/portal/invoices}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i><span th:text="#{portal.backToList}">Back to list</span>
+            </a>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

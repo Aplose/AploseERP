@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Sales pipeline</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0"><i class="bi bi-funnel text-primary me-2"></i>Sales pipeline</h4>
+            <small class="text-muted">Move proposals between stages. Forecast = weighted sum (amount × probability).</small>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            <div class="bg-light rounded px-3 py-2">
+                <span class="small text-muted">CA prévisionnel</span>
+                <span class="fw-bold ms-2" th:text="${#numbers.formatDecimal(forecast, 1, 2) + ' EUR'}">0 EUR</span>
+            </div>
+            <a th:href="@{/proposals}" class="btn btn-outline-primary">Proposals</a>
+            <a th:href="@{/pipeline/stages}" class="btn btn-outline-secondary" sec:authorize="hasAuthority('PIPELINE_UPDATE')">Stages</a>
+        </div>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show" th:text="${message}">Message</div>
+
+    <div class="row g-3 overflow-auto flex-nowrap" style="min-height: 400px;">
+        <!-- No stage column -->
+        <div class="col-12 col-md-4 col-lg-3">
+            <div class="card border h-100">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <span>Non classé</span>
+                    <span class="badge bg-dark" th:text="${countByStage[null] ?: 0}">0</span>
+                </div>
+                <div class="card-body p-2 overflow-auto" style="max-height: 70vh;">
+                    <th:block th:each="p : ${pipelineService.findOpenProposalsByStage(null)}">
+                        <div class="card mb-2">
+                            <div class="card-body py-2">
+                                <a th:href="@{/proposals/{id}(id=${p.id})}" class="fw-semibold text-decoration-none" th:text="${p.reference}">PRO-001</a>
+                                <div class="small text-muted" th:text="${p.thirdParty != null ? p.thirdParty.name : '—'}">Client</div>
+                                <div class="small" th:text="${#numbers.formatDecimal(p.totalAmount, 1, 2) + ' ' + p.currencyCode}">0 EUR</div>
+                                <form th:if="${#authorization.expression('hasAuthority(''PIPELINE_UPDATE'')')}" th:action="@{/pipeline/proposals/{id}/stage(id=${p.id})}" method="post" class="mt-2">
+                                    <select name="stageId" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        <option value="">— Move to —</option>
+                                        <option th:each="s : ${stages}" th:value="${s.id}" th:text="${s.label + ' (' + s.probability + '%)'}">Stage</option>
+                                    </select>
+                                </form>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+        <!-- Stage columns -->
+        <div class="col-12 col-md-4 col-lg-3" th:each="stage : ${stages}">
+            <div class="card border h-100">
+                <div class="card-header d-flex justify-content-between align-items-center"
+                     th:classappend="${stage.closed} ? 'bg-dark text-white' : 'bg-light'">
+                    <span th:text="${stage.label}">Stage</span>
+                    <span class="badge" th:classappend="${stage.closed} ? 'bg-secondary' : 'bg-primary'"
+                          th:text="${stage.probability} + '%'">0%</span>
+                    <span class="badge bg-secondary ms-1" th:text="${countByStage[stage.id] ?: 0}">0</span>
+                </div>
+                <div class="card-body p-2 overflow-auto" style="max-height: 70vh;">
+                    <th:block th:each="p : ${pipelineService.findOpenProposalsByStage(stage.id)}">
+                        <div class="card mb-2">
+                            <div class="card-body py-2">
+                                <a th:href="@{/proposals/{id}(id=${p.id})}" class="fw-semibold text-decoration-none" th:text="${p.reference}">PRO-001</a>
+                                <div class="small text-muted" th:text="${p.thirdParty != null ? p.thirdParty.name : '—'}">Client</div>
+                                <div class="small" th:text="${#numbers.formatDecimal(p.totalAmount, 1, 2) + ' ' + p.currencyCode}">0 EUR</div>
+                                <form th:if="${#authorization.expression('hasAuthority(''PIPELINE_UPDATE'')')}" th:action="@{/pipeline/proposals/{id}/stage(id=${p.id})}" method="post" class="mt-2">
+                                    <select name="stageId" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        <option value="">— Non classé —</option>
+                                        <option th:each="s : ${stages}" th:value="${s.id}" th:text="${s.label}"
+                                                th:selected="${s.id == stage.id}">Stage</option>
+                                    </select>
+                                </form>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

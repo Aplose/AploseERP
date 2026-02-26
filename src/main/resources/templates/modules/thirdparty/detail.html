@@ -45,6 +45,20 @@
     </div>
 
     <div class="row g-4">
+        <!-- Prochaine action suggérée (IA) -->
+        <div class="col-12" sec:authorize="hasAuthority('AI_USE')">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body py-2">
+                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="nextActionBtn"
+                                th:attr="data-third-party-id=${tp.id}">
+                            <i class="bi bi-stars me-1"></i><span th:text="#{ai.thirdparty.nextAction}">Prochaine action suggérée (IA)</span>
+                        </button>
+                        <span id="nextActionResult" class="small text-muted"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- General Info -->
         <div class="col-lg-6">
@@ -202,6 +216,29 @@
 
     </div>
 
+    <script th:if="${#authorization.expression('hasAuthority(''AI_USE'')')}" th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var btn = document.getElementById('nextActionBtn');
+            if (!btn) return;
+            var out = document.getElementById('nextActionResult');
+            var tpId = btn.getAttribute('data-third-party-id');
+            var meta = document.querySelector('meta[name="_csrf"]');
+            var headerName = (document.querySelector('meta[name="_csrf_header"]') || {}).content || 'X-CSRF-TOKEN';
+            var token = meta ? meta.getAttribute('content') : '';
+            btn.addEventListener('click', function() {
+                btn.disabled = true;
+                out.textContent = '';
+                fetch('/ai/suggest-next-action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', [headerName]: token },
+                    body: JSON.stringify({ thirdPartyId: parseInt(tpId, 10) })
+                }).then(function(r) { return r.json(); }).then(function(data) {
+                    if (data.suggestion) out.textContent = data.suggestion;
+                    btn.disabled = false;
+                }).catch(function() { btn.disabled = false; });
+            });
+        });
+    </script>
 </div>
 </body>
 </html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Upload document</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/ged}">Documents</a></li>
+                <li class="breadcrumb-item active">Upload</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">Upload document</h4>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}">Error</div>
+
+    <form th:action="@{/ged/upload}" method="post" enctype="multipart/form-data" class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Entity type</label>
+                    <select name="entityType" class="form-select" required>
+                        <option value="">— Select —</option>
+                        <option th:each="t : ${entityTypes}" th:value="${t}" th:text="${t}">THIRD_PARTY</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Entity ID</label>
+                    <input type="number" name="entityId" class="form-control" required min="1" placeholder="e.g. 1"/>
+                    <small class="text-muted">ID of the third party, invoice, project, etc.</small>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">File</label>
+                    <input type="file" name="file" class="form-control" required/>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between">
+            <a th:href="@{/ged}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

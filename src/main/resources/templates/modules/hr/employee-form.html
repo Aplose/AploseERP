@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${employee.id != null} ? 'Edit employee' : 'New employee'">Employee</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/hr}">HR</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/hr/employees}">Employees</a></li>
+                <li class="breadcrumb-item active" th:text="${employee.id != null} ? 'Edit' : 'New employee'">Form</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0" th:text="${employee.id != null} ? 'Edit employee' : 'New employee'">Employee</h4>
+    </div>
+
+    <form th:action="${employee.id != null} ? @{/hr/employees/{id}(id=${employee.id})} : @{/hr/employees}" th:object="${employee}" method="post" class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                <ul class="mb-0">
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Error</li>
+                </ul>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">User (optional)</label>
+                    <select name="userId" class="form-select">
+                        <option value="">— None —</option>
+                        <option th:each="u : ${users}" th:value="${u.id}" th:text="${u.displayName}"
+                                th:selected="${employee.user != null && employee.user.id == u.id}">User</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Contact (optional)</label>
+                    <select name="contactId" class="form-select">
+                        <option value="">— None —</option>
+                        <option th:each="c : ${contacts}" th:value="${c.id}" th:text="${c.fullName}"
+                                th:selected="${employee.contact != null && employee.contact.id == c.id}">Contact</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Employee number</label>
+                    <input type="text" class="form-control" th:field="*{employeeNumber}" maxlength="50"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Job position</label>
+                    <select name="jobPositionId" class="form-select">
+                        <option value="">— None —</option>
+                        <option th:each="p : ${positions}" th:value="${p.id}" th:text="${p.code + ' - ' + p.label}"
+                                th:selected="${employee.jobPosition != null && employee.jobPosition.id == p.id}">Position</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Manager</label>
+                    <select name="managerId" class="form-select">
+                        <option value="">— None —</option>
+                        <option th:each="m : ${employees}" th:value="${m.id}" th:text="${m.displayName}"
+                                th:selected="${employee.manager != null && employee.manager.id == m.id}"
+                                th:disabled="${employee.id != null && m.id == employee.id}">Manager</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" th:field="*{status}">
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                        <option value="LEAVE">On leave</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Hire date</label>
+                    <input type="date" class="form-control" th:field="*{hireDate}"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Termination date</label>
+                    <input type="date" class="form-control" th:field="*{terminationDate}"/>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between">
+            <a th:href="${employee.id != null} ? @{/hr/employees/{id}(id=${employee.id})} : @{/hr/employees}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" th:text="${employee.id != null} ? 'Update' : 'Create'">Save</button>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

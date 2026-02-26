@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="${contract.id != null} ? 'Modifier contrat' : 'Nouveau contrat'">Contrat</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/contracts}">Contrats</a></li>
+                <li class="breadcrumb-item active" th:text="${contract.id != null} ? 'Modifier' : 'Nouveau'">Form</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0" th:text="${contract.id != null} ? 'Modifier le contrat' : 'Nouveau contrat'">Contrat</h4>
+    </div>
+
+    <form th:action="${contract.id != null} ? @{/contracts/{id}(id=${contract.id})} : @{/contracts}" th:object="${contract}" method="post" class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger">
+                <ul class="mb-0">
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Error</li>
+                </ul>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Tiers <span class="text-danger">*</span></label>
+                    <select name="thirdPartyId" class="form-select" required th:disabled="${contract.id != null}">
+                        <option value="">— Choisir —</option>
+                        <option th:each="tp : ${thirdParties}" th:value="${tp.id}" th:text="${tp.name}"
+                                th:selected="${contract.thirdParty != null && contract.thirdParty.id == tp.id}">TP</option>
+                    </select>
+                    <input th:if="${contract.id != null && contract.thirdParty != null}" type="hidden" name="thirdPartyId" th:value="${contract.thirdParty.id}"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Contact</label>
+                    <select name="contactId" class="form-select">
+                        <option value="">— Aucun —</option>
+                        <option th:each="c : ${contacts}" th:value="${c.id}" th:text="${c.fullName}"
+                                th:selected="${contract.contact != null && contract.contact.id == c.id}">Contact</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Type de contrat <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" th:field="*{contractType}" required maxlength="50" placeholder="ex. Maintenance, Abonnement"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Référence</label>
+                    <input type="text" class="form-control" th:field="*{reference}" maxlength="50"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Date début <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" th:field="*{startDate}" required/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Date fin</label>
+                    <input type="date" class="form-control" th:field="*{endDate}"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Renouvellement</label>
+                    <select class="form-select" th:field="*{renewalType}">
+                        <option value="">— Aucun —</option>
+                        <option value="AUTO">Automatique</option>
+                        <option value="TACIT">Tacite</option>
+                        <option value="MANUAL">Manuel</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Préavis (jours)</label>
+                    <input type="number" class="form-control" th:field="*{renewalNoticeDays}" min="0"/>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Devis lié</label>
+                    <select name="proposalId" class="form-select">
+                        <option value="">— Aucun —</option>
+                        <option th:each="p : ${proposals}" th:value="${p.id}" th:text="${p.reference + ' - ' + (p.thirdParty != null ? p.thirdParty.name : '')}"
+                                th:selected="${contract.proposal != null && contract.proposal.id == p.id}">—</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Statut</label>
+                    <select class="form-select" th:field="*{status}">
+                        <option value="ACTIVE">Actif</option>
+                        <option value="EXPIRED">Expiré</option>
+                        <option value="TERMINATED">Résilié</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" th:field="*{notes}" rows="2"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between">
+            <a th:href="@{/contracts}" class="btn btn-outline-secondary">Annuler</a>
+            <button type="submit" class="btn btn-primary" th:text="${contract.id != null} ? 'Enregistrer' : 'Créer'">Enregistrer</button>
+        </div>
+    </form>
+
+</div>
+</body>
+</html>

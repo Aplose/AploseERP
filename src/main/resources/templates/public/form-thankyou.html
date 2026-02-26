@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="#{publicform.thankyou}">Merci</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.min.css}"/>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}"><span th:text="#{app.name}">AploseERP</span></a>
+        </div>
+    </nav>
+    <div class="container py-5 text-center">
+        <div class="alert alert-success">
+            <p class="mb-0" th:if="${successMessage != null && successMessage.startsWith('publicform.')}" th:text="#{${successMessage}}">Merci.</p>
+            <p class="mb-0" th:if="${successMessage != null && !successMessage.startsWith('publicform.')}" th:text="${successMessage}">Merci.</p>
+            <p class="mb-0" th:unless="${successMessage}" th:text="#{publicform.thankyou}">Merci. Votre message a bien été envoyé.</p>
+        </div>
+        <a th:href="@{/}" class="btn btn-primary" th:text="#{publicform.back}">Retour à l'accueil</a>
+    </div>
+</body>
+</html>

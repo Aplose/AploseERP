@@ -106,6 +106,49 @@ public class DictionaryService {
     }
 
     /**
+     * Create or update a dictionary item for the given tenant (for import use case).
+     * If an item with the same type and code exists, it is updated; otherwise created.
+     *
+     * @param tenantId must be non-null
+     * @return the created or updated item
+     */
+    @Transactional
+    public DictionaryItem createOrUpdateForTenant(String tenantId, String type, String code, String label, Integer sortOrder, Boolean active) {
+        if (tenantId == null || tenantId.isBlank()) {
+            throw new IllegalArgumentException("tenantId is required");
+        }
+        String normalizedCode = code != null ? code.trim().toUpperCase() : "";
+        String normalizedLabel = label != null ? label.trim() : "";
+        short order = sortOrder != null ? sortOrder.shortValue() : 0;
+        boolean isActive = active != null ? active : true;
+
+        Optional<DictionaryItem> existing = repository.findByTenantIdAndTypeAndCode(tenantId, type, normalizedCode);
+        if (existing.isPresent()) {
+            DictionaryItem item = existing.get();
+            item.setLabel(normalizedLabel);
+            item.setSortOrder(order);
+            item.setActive(isActive);
+            DictionaryItem saved = repository.save(item);
+            if (DictionaryType.CURRENCY.equals(type)) {
+                ensureCurrencyInCatalog(saved.getCode(), saved.getLabel());
+            }
+            return saved;
+        }
+        DictionaryItem item = new DictionaryItem();
+        item.setTenantId(tenantId);
+        item.setType(type);
+        item.setCode(normalizedCode);
+        item.setLabel(normalizedLabel);
+        item.setSortOrder(order);
+        item.setActive(isActive);
+        DictionaryItem saved = repository.save(item);
+        if (DictionaryType.CURRENCY.equals(type)) {
+            ensureCurrencyInCatalog(saved.getCode(), saved.getLabel());
+        }
+        return saved;
+    }
+
+    /**
      * Seed default dictionary items for a newly created tenant.
      */
     @Transactional

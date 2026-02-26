@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head><title th:text="#{portal.proposals}">Proposals</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a th:href="@{/portal}"><span th:text="#{portal.dashboard.title}">Portal</span></a></li>
+                <li class="breadcrumb-item active" th:text="#{portal.proposals}">Proposals</li>
+            </ol>
+        </nav>
+        <h4 class="mb-0">
+            <i class="bi bi-file-earmark-text text-primary me-2"></i>
+            <span th:text="#{portal.proposals}">Proposals</span>
+        </h4>
+        <small class="text-muted" th:text="${#lists.size(proposals)} + ' ' + #{portal.items}">0 items</small>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th th:text="#{proposal.label.reference}">Reference</th>
+                        <th th:text="#{proposal.label.title}">Title</th>
+                        <th th:text="#{proposal.label.dateIssued}">Date</th>
+                        <th th:text="#{proposal.label.validUntil}">Valid until</th>
+                        <th class="text-end" th:text="#{proposal.label.total}">Total</th>
+                        <th th:text="#{proposal.label.status}">Status</th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${proposals.isEmpty()}">
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                            <span th:text="#{portal.noProposals}">No proposals found.</span>
+                        </td>
+                    </tr>
+                    <tr th:each="p : ${proposals}">
+                        <td>
+                            <a th:href="@{/portal/proposals/{id}(id=${p.id})}" class="fw-semibold text-decoration-none"
+                               th:text="${p.reference}">PROP-001</a>
+                        </td>
+                        <td th:text="${p.title ?: '—'}">—</td>
+                        <td th:text="${#temporals.format(p.dateIssued, 'dd/MM/yyyy')}">01/01/2025</td>
+                        <td th:text="${p.dateValidUntil != null} ? ${#temporals.format(p.dateValidUntil, 'dd/MM/yyyy')} : '—'">—</td>
+                        <td class="text-end fw-semibold">
+                            <span th:text="${#numbers.formatDecimal(p.totalAmount, 1, 2)}">0.00</span>
+                            <small class="text-muted" th:text="${p.currencyCode}">EUR</small>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${p.statusBadgeClass}" th:text="${p.status}">DRAFT</span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/portal/proposals/{id}(id=${p.id})}" class="btn btn-sm btn-outline-primary" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

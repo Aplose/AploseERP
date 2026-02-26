@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Ticket</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/ticketing}">Tickets</a></li>
+                <li class="breadcrumb-item active" th:text="${ticket.subject}">Ticket</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h4 class="mb-1" th:text="${ticket.subject}">Subject</h4>
+                <span class="badge me-1" th:classappend="${ticket.status == 'OPEN'} ? 'bg-warning' : 'bg-success'" th:text="${ticket.status}">OPEN</span>
+                <span class="badge bg-secondary" th:text="${ticket.priority}">MEDIUM</span>
+                <p class="text-muted mb-0 mt-2" th:if="${ticket.requester != null}" th:text="'Requester: ' + ${ticket.requester.displayName}">Requester</p>
+                <p class="text-muted mb-0" th:if="${ticket.assignee != null}" th:text="'Assignee: ' + ${ticket.assignee.displayName}">Assignee</p>
+            </div>
+            <a th:href="@{/ticketing/{id}/edit(id=${ticket.id})}" class="btn btn-outline-primary" sec:authorize="hasAuthority('TICKETING_UPDATE')">Edit</a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3" th:if="${ticket.description}">
+        <div class="card-body">
+            <h6>Description</h6>
+            <p class="mb-0" th:utext="${ticket.description}">Description</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Comments</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/ticketing/{id}/comment(id=${ticket.id})}" method="post" class="mb-4" sec:authorize="hasAuthority('TICKETING_UPDATE')">
+                <textarea name="content" id="ticketCommentContent" class="form-control mb-2" rows="3" placeholder="Add a comment..." required></textarea>
+                <div class="d-flex gap-2 align-items-center">
+                    <button type="submit" class="btn btn-primary btn-sm">Add comment</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="ticketSuggestReplyBtn" title="Suggérer une réponse (IA)"
+                            sec:authorize="hasAuthority('AI_USE')"
+                            th:attr="data-ticket-id=${ticket.id}">
+                        <i class="bi bi-stars me-1"></i><span th:text="#{ai.ticket.suggestReply}">Suggest reply (AI)</span>
+                    </button>
+                </div>
+            </form>
+            <div th:each="c : ${ticket.comments}" class="border-start border-3 ps-3 mb-3">
+                <small class="text-muted" th:text="${c.user.displayName + ' - ' + #temporals.format(c.createdAt, 'dd/MM/yyyy HH:mm')}">User, date</small>
+                <p class="mb-0" th:utext="${c.content}">Comment</p>
+            </div>
+            <p th:if="${#lists.isEmpty(ticket.comments)}" class="text-muted mb-0">No comments yet.</p>
+        </div>
+    </div>
+
+    <script th:if="${#authorization.expression('hasAuthority(''AI_USE'')')}" th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var btn = document.getElementById('ticketSuggestReplyBtn');
+            if (!btn) return;
+            var textarea = document.getElementById('ticketCommentContent');
+            var ticketId = btn.getAttribute('data-ticket-id');
+            var meta = document.querySelector('meta[name="_csrf"]');
+            var headerName = (document.querySelector('meta[name="_csrf_header"]') || {}).content || 'X-CSRF-TOKEN';
+            var token = meta ? meta.getAttribute('content') : '';
+            btn.addEventListener('click', function() {
+                btn.disabled = true;
+                fetch('/ai/suggest-ticket-reply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', [headerName]: token },
+                    body: JSON.stringify({ ticketId: parseInt(ticketId, 10) })
+                }).then(function(r) { return r.json(); }).then(function(data) {
+                    if (data.suggestion) textarea.value = data.suggestion;
+                    btn.disabled = false;
+                }).catch(function() { btn.disabled = false; });
+            });
+        });
+    </script>
+</div>
+</body>
+</html>

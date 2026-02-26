@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Contrats</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item" th:if="${thirdParty != null}"><a th:href="@{/third-parties}">Tiers</a></li>
+                    <li class="breadcrumb-item" th:if="${thirdParty != null}"><a th:href="@{/third-parties/{id}(id=${thirdParty.id})}" th:text="${thirdParty.name}">TP</a></li>
+                    <li class="breadcrumb-item active">Contrats</li>
+                </ol>
+            </nav>
+            <h4 class="mb-0"><i class="bi bi-file-earmark-contract text-primary me-2"></i>Contrats commerciaux</h4>
+        </div>
+        <a th:href="@{/contracts/new(thirdPartyId=${thirdPartyId})}" class="btn btn-primary" sec:authorize="hasAuthority('BUSINESS_CONTRACT_CREATE')">Nouveau contrat</a>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}">Message</div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Référence</th>
+                        <th>Tiers</th>
+                        <th>Type</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th>Statut</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(contracts)}">
+                        <td colspan="7" class="text-center text-muted py-5">Aucun contrat.</td>
+                    </tr>
+                    <tr th:each="c : ${contracts}">
+                        <td th:text="${c.reference} ?: '—'">—</td>
+                        <td><a th:href="@{/third-parties/{id}(id=${c.thirdParty.id})}" th:text="${c.thirdParty.name}">TP</a></td>
+                        <td th:text="${c.contractType}">—</td>
+                        <td th:text="${#temporals.format(c.startDate, 'dd/MM/yyyy')}">—</td>
+                        <td th:text="${c.endDate != null} ? ${#temporals.format(c.endDate, 'dd/MM/yyyy')} : '—'">—</td>
+                        <td><span class="badge bg-secondary" th:text="${c.status}">—</span></td>
+                        <td class="text-end">
+                            <a th:href="@{/contracts/{id}(id=${c.id})}" class="btn btn-sm btn-outline-secondary">Voir</a>
+                            <a th:href="@{/contracts/{id}/edit(id=${c.id})}" class="btn btn-sm btn-outline-primary" sec:authorize="hasAuthority('BUSINESS_CONTRACT_UPDATE')">Modifier</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

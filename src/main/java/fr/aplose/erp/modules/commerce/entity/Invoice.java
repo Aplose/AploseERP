@@ -94,6 +94,9 @@ public class Invoice extends BaseEntity implements BusinessObject {
     @Column(name = "created_by")
     private Long createdById;
 
+    @Column(name = "last_reminder_at")
+    private LocalDateTime lastReminderAt;
+
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
     private List<InvoiceLine> lines = new ArrayList<>();

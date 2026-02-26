@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>Accounting entries</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/accounting}">Accounting</a></li>
+                    <li class="breadcrumb-item active">Entries</li>
+                </ol>
+            </nav>
+            <h4 class="mb-0">Entries</h4>
+            <small class="text-muted" th:text="${entries.totalElements} + ' entry(ies)'">0 entries</small>
+        </div>
+        <a th:href="@{/accounting/entries/new}" class="btn btn-primary" sec:authorize="hasAuthority('ACCOUNTING_CREATE')">
+            <i class="bi bi-plus-lg me-1"></i>New entry
+        </a>
+    </div>
+
+    <div class="mb-3">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${journalId == null} ? 'active' : ''" th:href="@{/accounting/entries}">All</a>
+            </li>
+            <li class="nav-item" th:each="j : ${journals}">
+                <a class="nav-link" th:classappend="${journalId != null && journalId == j.id} ? 'active' : ''"
+                   th:href="@{/accounting/entries(journalId=${j.id})}" th:text="${j.code}">Journal</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Journal</th>
+                        <th>Reference</th>
+                        <th>Description</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${entries.isEmpty()}">
+                        <td colspan="5" class="text-center text-muted py-5">No entries found.</td>
+                    </tr>
+                    <tr th:each="e : ${entries}">
+                        <td th:text="${#temporals.format(e.entryDate, 'dd/MM/yyyy')}">01/01/2025</td>
+                        <td th:text="${e.journal.code}">J</td>
+                        <td th:text="${e.reference} ?: '—'">—</td>
+                        <td th:text="${e.description} ?: '—'">—</td>
+                        <td class="text-end">
+                            <a th:href="@{/accounting/entries/{id}(id=${e.id})}" class="btn btn-sm btn-outline-secondary">View</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center"
+             th:if="${entries.totalPages > 1}">
+            <small class="text-muted" th:text="'Page ' + (${entries.number} + 1) + ' of ' + ${entries.totalPages}">Page 1</small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${entries.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/accounting/entries(journalId=${journalId}, page=${entries.number - 1})}"><i class="bi bi-chevron-left"></i></a>
+                    </li>
+                    <li class="page-item" th:classappend="${entries.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/accounting/entries(journalId=${journalId}, page=${entries.number + 1})}"><i class="bi bi-chevron-right"></i></a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

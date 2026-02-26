@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head><title>CRM activities</title></head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item" th:if="${thirdParty != null}"><a th:href="@{/third-parties}">Tiers</a></li>
+                    <li class="breadcrumb-item" th:if="${thirdParty != null}"><a th:href="@{/third-parties/{id}(id=${thirdParty.id})}" th:text="${thirdParty.name}">TP</a></li>
+                    <li class="breadcrumb-item active">Activités</li>
+                </ol>
+            </nav>
+            <h4 class="mb-0"><i class="bi bi-check2-square text-primary me-2"></i>CRM activities</h4>
+            <small class="text-muted" th:if="${thirdParty != null}" th:text="'Linked to ' + ${thirdParty.name}">Linked to third party</small>
+        </div>
+        <a th:href="@{/crm/activities/new(thirdPartyId=${thirdPartyId})}" class="btn btn-primary" sec:authorize="hasAuthority('CRM_ACTIVITY_CREATE')">
+            <i class="bi bi-plus-lg me-1"></i>New activity
+        </a>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}">Message</div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Type</th>
+                        <th>Subject</th>
+                        <th>Third party</th>
+                        <th>Due</th>
+                        <th>Assigned to</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(activities)}">
+                        <td colspan="7" class="text-center text-muted py-5">No activities.</td>
+                    </tr>
+                    <tr th:each="a : ${activities}">
+                        <td><span class="badge bg-secondary" th:text="${a.activityType}">Type</span></td>
+                        <td>
+                            <a th:href="@{/crm/activities/{id}(id=${a.id})}" class="fw-semibold text-decoration-none" th:text="${a.subject}">Subject</a>
+                        </td>
+                        <td>
+                            <a th:if="${a.thirdParty != null}" th:href="@{/third-parties/{id}(id=${a.thirdParty.id})}" th:text="${a.thirdParty.name}">TP</a>
+                            <span th:unless="${a.thirdParty != null}">—</span>
+                        </td>
+                        <td th:text="${a.dueDate != null} ? ${#temporals.format(a.dueDate, 'dd/MM/yyyy')} : '—'">—</td>
+                        <td th:text="${a.assignedTo != null} ? ${a.assignedTo.displayName} : '—'">—</td>
+                        <td>
+                            <span class="badge bg-success" th:if="${a.completedAt != null}">Done</span>
+                            <span class="badge bg-warning text-dark" th:if="${a.completedAt == null && a.overdue}">Overdue</span>
+                            <span class="badge bg-secondary" th:if="${a.completedAt == null && !a.overdue}">Pending</span>
+                        </td>
+                        <td class="text-end">
+                            <a th:href="@{/crm/activities/{id}(id=${a.id})}" class="btn btn-sm btn-outline-secondary">View</a>
+                            <a th:href="@{/crm/activities/{id}/edit(id=${a.id})}" class="btn btn-sm btn-outline-primary" sec:authorize="hasAuthority('CRM_ACTIVITY_UPDATE')">Edit</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

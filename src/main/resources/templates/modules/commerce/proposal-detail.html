@@ -86,6 +86,16 @@
                             <td th:text="${proposal.currencyCode}">EUR</td>
                         </tr>
                     </table>
+                    <div class="mt-3 pt-3 border-top" sec:authorize="hasAuthority('AI_USE')">
+                        <label class="form-label small text-muted" th:text="#{ai.proposal.conversionScore}">Score conversion (IA)</label>
+                        <div class="d-flex gap-2 align-items-center flex-wrap">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="proposalScoreBtn"
+                                    th:attr="data-proposal-id=${proposal.id}">
+                                <i class="bi bi-stars me-1"></i><span th:text="#{ai.proposal.getScore}">Obtenir un score</span>
+                            </button>
+                            <span id="proposalScoreResult" class="small"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -176,7 +186,14 @@
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <div class="col-md-4">
                             <label class="form-label small">Description</label>
-                            <input type="text" class="form-control form-control-sm" th:field="*{description}" required/>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" id="proposalLineDescription" th:field="*{description}" required/>
+                                <button type="button" class="btn btn-outline-secondary ai-suggest-btn" title="Suggérer un libellé avec l'IA"
+                                        sec:authorize="hasAuthority('AI_USE')"
+                                        th:attr="data-csrf-token=${_csrf.token}, data-csrf-header=${_csrf.headerName}">
+                                    <i class="bi bi-stars"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="col-md-1">
                             <label class="form-label small">Qty</label>
@@ -242,6 +259,29 @@
 
     </div>
 
+    <script th:if="${#authorization.expression('hasAuthority(''AI_USE'')')}" th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var btn = document.getElementById('proposalScoreBtn');
+            if (!btn) return;
+            var out = document.getElementById('proposalScoreResult');
+            var proposalId = btn.getAttribute('data-proposal-id');
+            var meta = document.querySelector('meta[name="_csrf"]');
+            var headerName = (document.querySelector('meta[name="_csrf_header"]') || {}).content || 'X-CSRF-TOKEN';
+            var token = meta ? meta.getAttribute('content') : '';
+            btn.addEventListener('click', function() {
+                btn.disabled = true;
+                out.textContent = '';
+                fetch('/ai/suggest-conversion-score', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', [headerName]: token },
+                    body: JSON.stringify({ proposalId: parseInt(proposalId, 10) })
+                }).then(function(r) { return r.json(); }).then(function(data) {
+                    if (data.suggestion) out.textContent = data.suggestion;
+                    btn.disabled = false;
+                }).catch(function() { btn.disabled = false; });
+            });
+        });
+    </script>
 </div>
 </body>
 </html>

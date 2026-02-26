@@ -81,6 +81,28 @@ public class MailService {
         return baseUrl;
     }
 
+    /**
+     * Sends a simple text email (e.g. for public form submission notification).
+     */
+    public void sendSimple(String to, String subject, String bodyText) {
+        if (mailSender == null) {
+            log.debug("Mail sender not configured, skipping email to {}", to);
+            return;
+        }
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(to);
+            helper.setSubject(subject != null ? subject : "");
+            helper.setText(bodyText != null ? bodyText : "", false);
+            mailSender.send(message);
+            log.debug("Sent email to {}", to);
+        } catch (MessagingException e) {
+            log.warn("Failed to send email to {}: {}", to, e.getMessage());
+        }
+    }
+
     private void sendTemplate(String to, EmailTemplate template, Map<String, String> variables) {
         if (mailSender == null) {
             log.debug("Mail sender not configured, skipping email to {}", to);

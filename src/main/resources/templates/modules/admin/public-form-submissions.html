@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/base}">
+<head>
+    <title th:text="#{publicform.admin.submissions}">Soumissions</title>
+</head>
+<body>
+<div layout:fragment="content">
+
+    <div class="d-flex align-items-center mb-4">
+        <a th:href="@{/admin/public-forms}" class="btn btn-outline-secondary btn-sm me-2"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h4 class="mb-0"><span th:text="#{publicform.admin.submissions}">Soumissions</span> – <span th:text="${form.name}">Contact</span></h4>
+            <small class="text-muted" th:text="${form.code}">contact</small>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th th:text="#{publicform.submittedAt}">Date</th>
+                            <th th:text="#{publicform.data}">Données</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${submissions.isEmpty()}">
+                            <td colspan="2" class="text-center text-muted py-4" th:text="#{publicform.admin.noSubmissions}">Aucune soumission.</td>
+                        </tr>
+                        <tr th:each="sub : ${submissions.content}">
+                            <td th:text="${#temporals.format(sub.submittedAt, 'dd/MM/yyyy HH:mm')}">—</td>
+                            <td>
+                                <pre class="small mb-0 font-monospace" style="white-space: pre-wrap; max-height: 8rem; overflow-y: auto;" th:text="${sub.dataJson}">—</pre>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div th:if="${submissions.totalPages > 1}" class="card-footer d-flex justify-content-between align-items-center">
+            <span class="small text-muted" th:text="#{common.page} + ' ' + ${submissions.number + 1} + ' / ' + ${submissions.totalPages}">Page</span>
+            <div>
+                <a th:if="${submissions.hasPrevious()}" th:href="@{/admin/public-forms/{id}/submissions(id=${form.id}, page=${submissions.number - 1})}" class="btn btn-sm btn-outline-secondary" th:text="#{common.previous}">Précédent</a>
+                <a th:if="${submissions.hasNext()}" th:href="@{/admin/public-forms/{id}/submissions(id=${form.id}, page=${submissions.number + 1})}" class="btn btn-sm btn-outline-secondary ms-1" th:text="#{common.next}">Suivant</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
