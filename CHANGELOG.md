@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Isolation entre entreprises : une fois connecté, l'entreprise courante est toujours celle de l'utilisateur. Auparavant, un sous-domaine ou un en-tête `X-Tenant-ID` donnait accès aux données d'une autre entreprise (#3).
+- Formulaires : `id`, `tenantId` et les champs techniques ne sont plus lus depuis la requête. Auparavant, un formulaire de création portant l'identifiant d'un enregistrement existant l'écrasait, y compris dans une autre entreprise (#3).
+
+### Added
+
+- Création d'une facture depuis une commande (bouton « Créer la facture ») ; une commande n'est facturée qu'une fois (#3).
+- Import Dolibarr : projets et tâches (sous-tâches comprises) vers le module projets (#2).
+- Tests : isolation entre entreprises, circuit devis → commande → facture → paiements, validation du schéma, import Dolibarr (24 tests).
+
+### Fixed
+
+- Toutes les pages en `layout:decorate` renvoyaient une erreur 500 (Groovy 5 incompatible avec thymeleaf-layout-dialect : Groovy 4 imposé) (#3).
+- Pages de détail en erreur sur les relations (`open-in-view` réactivé) (#3).
+- Le profil `prod` refusait de démarrer (`ddl-auto=validate`) : colonnes manquantes et types différents, corrigés par la migration V14 (#3).
+- Authentification par clé API en erreur (`LazyInitializationException`) (#3).
+- Un devis converti en commande passe à `CONVERTED` et ne peut plus être converti deux fois (#3).
+- Import Dolibarr (#2) : pagination complète (plus de troncature à 5 000-10 000 enregistrements) ; relance sans doublons ni perte de liens ; paiements lus par facture ; dates en timestamp Unix ; montant payé ; avoirs gardés en ventes ; statuts alignés ; TVA des produits en fraction ; un enregistrement rejeté ne fait plus échouer tout l'import ; paramètres de connexion isolés par import.
+
 ### Changed
 
 - Le dossier de build Maven `target/` n'est plus suivi par git (ajouté au `.gitignore`).
