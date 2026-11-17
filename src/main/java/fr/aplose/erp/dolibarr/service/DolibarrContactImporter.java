@@ -1,8 +1,6 @@
 package fr.aplose.erp.dolibarr.service;
 
 import fr.aplose.erp.dolibarr.client.DolibarrApiClient;
-import fr.aplose.erp.dolibarr.entity.DolibarrImportMapping;
-import fr.aplose.erp.dolibarr.repository.DolibarrImportMappingRepository;
 import fr.aplose.erp.modules.contact.entity.Contact;
 import fr.aplose.erp.modules.contact.entity.ContactThirdPartyLink;
 import fr.aplose.erp.modules.contact.repository.ContactRepository;
@@ -25,18 +23,23 @@ public class DolibarrContactImporter {
     private final ContactRepository contactRepository;
     private final ContactThirdPartyLinkRepository linkRepository;
     private final ThirdPartyRepository thirdPartyRepository;
-    private final DolibarrImportMappingRepository mappingRepository;
+    private final DolibarrMappingService mappingService;
 
     public void importContacts(Long runId) {
         String tenantId = TenantContext.getCurrentTenantId();
         if (tenantId == null) return;
 
-        List<Map<String, Object>> list = client.getList("contacts", Map.of("limit", "10000", "sortfield", "rowid"));
+        List<Map<String, Object>> list = client.getAll("contacts", Map.of("sortfield", "t.rowid"));
         if (list == null) return;
 
+        int alreadyImported = 0;
         for (Map<String, Object> m : list) {
             Long doliId = DolibarrImportHelper.getDolibarrId(m);
             if (doliId == null) continue;
+            if (mappingService.isImported(tenantId, "contacts", doliId)) {
+                alreadyImported++;
+                continue;
+            }
 
             try {
                 String firstName = DolibarrImportHelper.getString(m, "firstname");
@@ -66,18 +69,11 @@ public class DolibarrContactImporter {
 
                 Contact saved = contactRepository.save(c);
 
-                DolibarrImportMapping mapping = new DolibarrImportMapping();
-                mapping.setTenantId(tenantId);
-                mapping.setImportRunId(runId);
-                mapping.setDolibarrEntity("contacts");
-                mapping.setDolibarrId(doliId);
-                mapping.setAploseEntity("CONTACT");
-                mapping.setAploseId(saved.getId());
-                mappingRepository.save(mapping);
+                mappingService.record(tenantId, runId, "contacts", doliId, "CONTACT", saved.getId());
 
                 Long fkSoc = DolibarrImportHelper.getLong(m, "socid");
                 if (fkSoc != null) {
-                    Optional<Long> aploseTpId = mappingRepository.findAploseId(tenantId, runId, "thirdparties", fkSoc);
+                    Optional<Long> aploseTpId = mappingService.find(tenantId, "thirdparties", fkSoc);
                     aploseTpId.flatMap(thirdPartyRepository::findById)
                             .filter(tp -> tenantId.equals(tp.getTenantId()))
                             .ifPresent(tp -> {
@@ -93,5 +89,6 @@ public class DolibarrContactImporter {
                 logService.logError(runId, "CONTACTS", String.valueOf(doliId), e.getMessage(), null);
             }
         }
+        logService.logInfo(runId, "CONTACTS", alreadyImported + " contact(s) déjà importé(s) lors d'un import précédent");
     }
 }

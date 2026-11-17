@@ -46,8 +46,13 @@ public class DolibarrImportController {
 
     @PostMapping("/test")
     public String testConnection(@RequestParam String baseUrl, @RequestParam String apiKey, RedirectAttributes ra) {
-        dolibarrApiClient.configure(baseUrl, apiKey);
-        boolean ok = dolibarrApiClient.testConnection();
+        boolean ok;
+        try {
+            dolibarrApiClient.configure(baseUrl, apiKey);
+            ok = dolibarrApiClient.testConnection();
+        } finally {
+            dolibarrApiClient.clear();
+        }
         if (ok) {
             ra.addFlashAttribute("successMessage", "Connexion réussie.");
         } else {

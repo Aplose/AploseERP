@@ -27,7 +27,7 @@ public class DolibarrStagingImporter {
 
     /** Resources to fetch and store as staging (TODO until module exists). */
     private static final List<String> STAGING_RESOURCES = List.of(
-            "supplier_orders", "supplier_proposals", "contracts", "projects", "tasks",
+            "supplier_orders", "supplier_proposals", "contracts",
             "stock_movements", "expensereports", "trips", "holiday"
     );
 
@@ -37,7 +37,7 @@ public class DolibarrStagingImporter {
 
         for (String resource : STAGING_RESOURCES) {
             try {
-                List<Map<String, Object>> list = client.getList(resource, Map.of("limit", "5000", "sortfield", "rowid"));
+                List<Map<String, Object>> list = client.getAll(resource, Map.of("sortfield", "t.rowid"));
                 if (list == null || list.isEmpty()) continue;
 
                 for (Map<String, Object> item : list) {

@@ -7,7 +7,6 @@ import fr.aplose.erp.tenant.context.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,13 +24,17 @@ public class DolibarrImportOrchestrator {
     private final DolibarrInvoiceImporter invoiceImporter;
     private final DolibarrPaymentImporter paymentImporter;
     private final DolibarrOrderImporter orderImporter;
+    private final DolibarrProjectImporter projectImporter;
     private final DolibarrStagingImporter stagingImporter;
 
     /**
      * Run full import for the given tenant. Caller must pass baseUrl and apiKey (from form or saved config).
      * TenantContext is set to tenantId for the duration of the import.
+     * <p>
+     * Deliberately not one big transaction: each record is saved on its own, so that one record
+     * rejected by the database is logged as an error instead of rolling the whole import back.
+     * Re-running the import resumes where it stopped (already imported records are skipped).
      */
-    @Transactional
     public DolibarrImportRun runImport(String tenantId, String baseUrl, String apiKey, Long configId, Long createdBy) {
         if (tenantId == null || tenantId.isBlank()) {
             throw new IllegalArgumentException("tenantId is required");
@@ -54,6 +57,8 @@ public class DolibarrImportOrchestrator {
             runStep(runId, "INVOICES", () -> invoiceImporter.importInvoices(runId));
             runStep(runId, "PAYMENTS", () -> paymentImporter.importPayments(runId));
             runStep(runId, "ORDERS", () -> orderImporter.importOrders(runId));
+            runStep(runId, "PROJECTS", () -> projectImporter.importProjects(runId));
+            runStep(runId, "TASKS", () -> projectImporter.importTasks(runId));
             runStep(runId, "STAGING_TODO", () -> stagingImporter.importStaging(runId));
 
             String status = DolibarrImportRun.STATUS_SUCCESS;
@@ -62,6 +67,7 @@ public class DolibarrImportOrchestrator {
 
             return runRepository.findById(runId).orElseThrow();
         } finally {
+            dolibarrApiClient.clear();
             if (previousTenant != null) {
                 TenantContext.setCurrentTenantId(previousTenant);
             } else {
