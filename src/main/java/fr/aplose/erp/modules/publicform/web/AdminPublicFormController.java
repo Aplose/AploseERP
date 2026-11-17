@@ -53,10 +53,17 @@ public class AdminPublicFormController {
     @PostMapping("/save")
     @PreAuthorize("hasAuthority('PUBLIC_FORM_CREATE') or hasAuthority('PUBLIC_FORM_UPDATE')")
     public String save(@ModelAttribute PublicForm form,
+                       @RequestParam(required = false) Long formId,
                        @AuthenticationPrincipal ErpUserDetails user,
                        Model model,
                        RedirectAttributes ra) {
         try {
+            // "id" is never bound from the request (see GlobalBindingAdvice): an update names the
+            // form in "formId", which must belong to the user's company.
+            if (formId != null) {
+                publicFormService.findByIdAndTenant(formId, user.getTenantId());
+                form.setId(formId);
+            }
             publicFormService.save(form, user.getTenantId());
             ra.addFlashAttribute("message", "publicform.saved");
             return "redirect:/admin/public-forms";

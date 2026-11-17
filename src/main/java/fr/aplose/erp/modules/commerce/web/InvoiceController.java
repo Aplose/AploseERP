@@ -102,6 +102,21 @@ public class InvoiceController {
         return "modules/commerce/invoice-form";
     }
 
+    @PostMapping("/from-order/{orderId}")
+    @PreAuthorize("hasAuthority('INVOICE_CREATE')")
+    public String createFromOrder(@PathVariable Long orderId,
+                                  @AuthenticationPrincipal ErpUserDetails principal,
+                                  RedirectAttributes ra) {
+        try {
+            var invoice = service.createFromOrder(orderId, principal.getUserId());
+            ra.addFlashAttribute("successMessage", "Invoice " + invoice.getReference() + " created from order");
+            return "redirect:/invoices/" + invoice.getId();
+        } catch (IllegalStateException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/orders/" + orderId;
+        }
+    }
+
     @PostMapping("/new")
     @PreAuthorize("hasAuthority('INVOICE_CREATE')")
     public String create(@Valid @ModelAttribute("invoice") InvoiceDto dto,

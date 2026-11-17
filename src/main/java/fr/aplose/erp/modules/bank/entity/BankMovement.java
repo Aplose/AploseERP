@@ -1,5 +1,7 @@
 package fr.aplose.erp.modules.bank.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import fr.aplose.erp.modules.commerce.entity.Invoice;
 import fr.aplose.erp.modules.commerce.entity.Payment;
 import jakarta.persistence.*;
@@ -34,6 +36,8 @@ public class BankMovement {
 
     @Column(name = "amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal amount;
+
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
 
     @Column(name = "currency_code", length = 3, nullable = false)
     private String currencyCode;

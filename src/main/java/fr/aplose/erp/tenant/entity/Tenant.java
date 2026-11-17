@@ -1,5 +1,7 @@
 package fr.aplose.erp.tenant.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,6 +44,8 @@ public class Tenant {
     @Column(name = "postal_code", length = 20)
     private String postalCode;
 
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
+
     @Column(name = "country_code", length = 2)
     private String countryCode;
 
@@ -56,6 +60,8 @@ public class Tenant {
 
     @Column(name = "default_locale", length = 10, nullable = false)
     private String defaultLocale = "en";
+
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
 
     @Column(name = "default_currency", length = 3, nullable = false)
     private String defaultCurrency = "EUR";

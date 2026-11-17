@@ -1,5 +1,7 @@
 package fr.aplose.erp.modules.commerce.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import fr.aplose.erp.core.entity.BaseEntity;
 import fr.aplose.erp.modules.contact.entity.Contact;
 import fr.aplose.erp.modules.thirdparty.entity.ThirdParty;
@@ -44,6 +46,8 @@ public class Proposal extends BaseEntity {
 
     @Column(name = "date_valid_until")
     private LocalDate dateValidUntil;
+
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
 
     @Column(name = "currency_code", length = 3, nullable = false)
     private String currencyCode;

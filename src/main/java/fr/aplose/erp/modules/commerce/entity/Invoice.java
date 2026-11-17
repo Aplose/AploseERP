@@ -1,5 +1,7 @@
 package fr.aplose.erp.modules.commerce.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import fr.aplose.erp.core.businessobject.BusinessObject;
 import fr.aplose.erp.core.entity.BaseEntity;
 import fr.aplose.erp.modules.contact.entity.Contact;
@@ -48,6 +50,8 @@ public class Invoice extends BaseEntity implements BusinessObject {
 
     @Column(name = "date_due", nullable = false)
     private LocalDate dateDue;
+
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
 
     @Column(name = "currency_code", length = 3, nullable = false)
     private String currencyCode;

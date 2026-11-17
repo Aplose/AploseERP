@@ -1,5 +1,7 @@
 package fr.aplose.erp.modules.commerce.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +31,8 @@ public class Payment {
 
     @Column(name = "amount", precision = 19, scale = 4, nullable = false)
     private BigDecimal amount;
+
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
 
     @Column(name = "currency_code", length = 3, nullable = false)
     private String currencyCode;

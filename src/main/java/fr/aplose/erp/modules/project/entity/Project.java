@@ -1,5 +1,7 @@
 package fr.aplose.erp.modules.project.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import fr.aplose.erp.core.entity.BaseEntity;
 import fr.aplose.erp.modules.thirdparty.entity.ThirdParty;
 import fr.aplose.erp.security.entity.User;
@@ -47,6 +49,8 @@ public class Project extends BaseEntity {
 
     @Column(name = "budget_amount", precision = 19, scale = 4)
     private BigDecimal budgetAmount;
+
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
 
     @Column(name = "currency_code", length = 3)
     private String currencyCode;

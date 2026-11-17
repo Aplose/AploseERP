@@ -12,7 +12,9 @@ spring:
   profiles:
     active: dev
   jpa:
-    open-in-view: false
+    # Thymeleaf views read lazy relations (invoice.thirdParty.name...): with open-in-view off,
+    # every detail page failed with LazyInitializationException. Keep the session open for rendering.
+    open-in-view: true
     hibernate:
       ddl-auto: none
     properties:

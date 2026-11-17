@@ -1,5 +1,7 @@
 package fr.aplose.erp.modules.commerce.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import fr.aplose.erp.modules.catalog.entity.Product;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -51,6 +53,8 @@ public class ProposalLine {
 
     @Column(name = "line_total", precision = 19, scale = 4, nullable = false)
     private BigDecimal lineTotal = BigDecimal.ZERO;
+
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
 
     @Column(name = "currency_code", length = 3, nullable = false)
     private String currencyCode;

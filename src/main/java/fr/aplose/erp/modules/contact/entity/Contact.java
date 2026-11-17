@@ -1,5 +1,7 @@
 package fr.aplose.erp.modules.contact.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import fr.aplose.erp.core.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -64,6 +66,8 @@ public class Contact extends BaseEntity {
 
     @Column(name = "postal_code", length = 20)
     private String postalCode;
+
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
 
     @Column(name = "country_code", length = 2)
     private String countryCode;
