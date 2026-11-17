@@ -34,6 +34,7 @@ import java.util.Set;
 public class InvoiceService {
 
     private final InvoiceRepository repo;
+    private final fr.aplose.erp.tenant.service.CurrentTenantService currentTenant;
     private final SalesOrderRepository orderRepo;
     private final ThirdPartyRepository thirdPartyRepo;
     private final ContactRepository contactRepo;
@@ -270,7 +271,7 @@ public class InvoiceService {
         }
         inv.setDateIssued(dto.getDateIssued());
         inv.setDateDue(dto.getDateDue());
-        inv.setCurrencyCode(dto.getCurrencyCode());
+        inv.setCurrencyCode(currentTenant.currencyOrDefault(dto.getCurrencyCode()));
         inv.setDiscountAmount(dto.getDiscountAmount());
         inv.setPaymentMethod(dto.getPaymentMethod());
         inv.setBankAccount(dto.getBankAccount());

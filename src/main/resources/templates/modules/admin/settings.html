@@ -45,20 +45,22 @@
                         <div class="mb-3">
                             <label class="form-label" th:text="#{settings.defaultLocale}">Default locale</label>
                             <select class="form-select" th:field="*{defaultLocale}">
-                                <option value="en">English</option>
-                                <option value="fr">Français</option>
+                                <option th:each="l : ${@referenceData.languages()}" th:value="${l.code}" th:text="${l.label}">Français</option>
                             </select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" th:text="#{label.currency}">Default currency</label>
-                            <input type="text" class="form-control" th:field="*{defaultCurrency}" maxlength="3"
-                                   th:classappend="${#fields.hasErrors('defaultCurrency')} ? 'is-invalid'"/>
+                            <select class="form-select" th:field="*{defaultCurrency}"
+                                    th:classappend="${#fields.hasErrors('defaultCurrency')} ? 'is-invalid'">
+                                <option th:each="c : ${@referenceData.currencies()}" th:value="${c.code}" th:text="${c.code + ' - ' + c.label}">EUR - Euro</option>
+                            </select>
                             <div class="invalid-feedback" th:errors="*{defaultCurrency}"></div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label" th:text="#{profile.timezone}">Timezone</label>
-                            <input type="text" class="form-control" th:field="*{timezone}"
-                                   placeholder="e.g. Europe/Paris"/>
+                            <select class="form-select" th:field="*{timezone}">
+                                <option th:each="z : ${@referenceData.timezones()}" th:value="${z}" th:text="${z}">Europe/Paris</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -101,8 +103,10 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label class="form-label" th:text="#{settings.countryCode}">Country</label>
-                                <input type="text" class="form-control" th:field="*{countryCode}" maxlength="2"
-                                       placeholder="FR"/>
+                                <select class="form-select" th:field="*{countryCode}">
+                                    <option value="">—</option>
+                                    <option th:each="c : ${@referenceData.countries()}" th:value="${c.code}" th:text="${c.label}">France</option>
+                                </select>
                             </div>
                         </div>
                     </div>

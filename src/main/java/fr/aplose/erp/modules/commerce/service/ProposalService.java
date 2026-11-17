@@ -23,6 +23,7 @@ import java.util.Set;
 public class ProposalService {
 
     private final ProposalRepository repo;
+    private final fr.aplose.erp.tenant.service.CurrentTenantService currentTenant;
     private final ThirdPartyRepository thirdPartyRepo;
     private final ContactRepository contactRepo;
     private final UserRepository userRepo;
@@ -135,7 +136,7 @@ public class ProposalService {
         p.setTitle(dto.getTitle());
         p.setDateIssued(dto.getDateIssued());
         p.setDateValidUntil(dto.getDateValidUntil());
-        p.setCurrencyCode(dto.getCurrencyCode());
+        p.setCurrencyCode(currentTenant.currencyOrDefault(dto.getCurrencyCode()));
         p.setDiscountAmount(dto.getDiscountAmount());
         p.setNotes(dto.getNotes());
         p.setTerms(dto.getTerms());

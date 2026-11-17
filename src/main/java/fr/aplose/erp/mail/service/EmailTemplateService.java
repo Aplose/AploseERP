@@ -20,6 +20,24 @@ public class EmailTemplateService {
         return emailTemplateRepository.findByTemplateKeyAndLocale(key, locale != null ? locale : "fr");
     }
 
+    /**
+     * Template in the recipient's language ("fr", "fr-CA" -> "fr"...), else English, else French.
+     */
+    public Optional<EmailTemplate> findBest(String key, String locale) {
+        java.util.List<String> candidates = new java.util.ArrayList<>();
+        if (locale != null && !locale.isBlank()) {
+            candidates.add(locale.trim());
+            candidates.add(java.util.Locale.forLanguageTag(locale.trim()).getLanguage());
+        }
+        candidates.add("en");
+        candidates.add("fr");
+        for (String candidate : candidates) {
+            Optional<EmailTemplate> t = emailTemplateRepository.findByTemplateKeyAndLocale(key, candidate);
+            if (t.isPresent()) return t;
+        }
+        return Optional.empty();
+    }
+
     public String render(String content, Map<String, String> variables) {
         if (content == null) return "";
         String result = content;

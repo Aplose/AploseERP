@@ -33,6 +33,7 @@ import java.util.Map;
 public class InvoiceController {
 
     private final InvoiceService service;
+    private final fr.aplose.erp.tenant.service.CurrentTenantService currentTenant;
     private final DictionaryService dictionaryService;
     private final ExtraFieldService extraFieldService;
 
@@ -94,6 +95,7 @@ public class InvoiceController {
     @PreAuthorize("hasAuthority('INVOICE_CREATE')")
     public String newForm(Model model) {
         var dto = new InvoiceDto();
+        dto.setCurrencyCode(currentTenant.defaultCurrency());
         dto.setDateIssued(java.time.LocalDate.now());
         dto.setDateDue(java.time.LocalDate.now().plusDays(30));
         model.addAttribute("invoice", dto);

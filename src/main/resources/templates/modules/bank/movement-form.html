@@ -47,7 +47,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Currency</label>
                     <select class="form-select" th:field="*{currencyCode}">
-                        <option th:each="c : ${currencies}" th:value="${c.code}" th:text="${c.code}">EUR</option>
+                        <option th:each="c : ${@referenceData.currencies()}" th:value="${c.code}" th:text="${c.code}">EUR</option>
                     </select>
                 </div>
                 <div class="col-12">

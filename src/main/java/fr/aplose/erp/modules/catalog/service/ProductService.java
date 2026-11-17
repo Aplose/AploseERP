@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 public class ProductService {
 
     private final ProductRepository repo;
+    private final fr.aplose.erp.tenant.service.CurrentTenantService currentTenant;
     private final ProductCategoryRepository categoryRepo;
 
     @Transactional(readOnly = true)
@@ -84,7 +85,7 @@ public class ProductService {
         p.setUnitOfMeasure(dto.getUnitOfMeasure());
         p.setSalePrice(dto.getSalePrice());
         p.setPurchasePrice(dto.getPurchasePrice());
-        p.setCurrencyCode(dto.getCurrencyCode());
+        p.setCurrencyCode(currentTenant.currencyOrDefault(dto.getCurrencyCode()));
         p.setVatRate(dto.getVatRate());
         p.setSellable(dto.isSellable());
         p.setPurchasable(dto.isPurchasable());

@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 public class SalesOrderService {
 
     private final SalesOrderRepository orderRepo;
+    private final fr.aplose.erp.tenant.service.CurrentTenantService currentTenant;
     private final ThirdPartyRepository thirdPartyRepo;
     private final ContactRepository contactRepo;
     private final UserRepository userRepo;
@@ -182,7 +183,7 @@ public class SalesOrderService {
         } else {
             o.setProposal(null);
         }
-        o.setCurrencyCode(dto.getCurrencyCode());
+        o.setCurrencyCode(currentTenant.currencyOrDefault(dto.getCurrencyCode()));
         o.setDiscountAmount(dto.getDiscountAmount() != null ? dto.getDiscountAmount() : BigDecimal.ZERO);
         o.setNotes(dto.getNotes());
         o.setTerms(dto.getTerms());

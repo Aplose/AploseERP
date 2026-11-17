@@ -1,5 +1,7 @@
 package fr.aplose.erp.tenant.service;
 
+import fr.aplose.erp.i18n.service.ReferenceDataService;
+
 import fr.aplose.erp.security.entity.Permission;
 import fr.aplose.erp.security.entity.Role;
 import fr.aplose.erp.security.entity.User;
@@ -40,9 +42,14 @@ public class TenantRegistrationService {
     private final MailService mailService;
     private final DictionaryService dictionaryService;
     private final TenantModuleService tenantModuleService;
+    private final ReferenceDataService referenceData;
 
     @Transactional
     public String register(SignupDto dto) {
+        String adminEmail = dto.getAdminEmail().trim().toLowerCase();
+        if (userRepository.isLoginTaken(adminEmail, null)) {
+            throw new IllegalStateException("Cette adresse email est déjà utilisée par un compte. / This email is already used by an account.");
+        }
         String planCode = SubscriptionPlan.fromCode(dto.getPlan()).getCode();
         String tenantId = UUID.randomUUID().toString();
         String code = uniqueTenantCode(slug(dto.getCompanyCode() != null && !dto.getCompanyCode().isBlank()
@@ -60,12 +67,16 @@ public class TenantRegistrationService {
         tenant.setPostalCode(trimToNull(dto.getPostalCode()));
         tenant.setCity(trimToNull(dto.getCity()));
         tenant.setStateProvince(trimToNull(dto.getStateProvince()));
-        tenant.setCountryCode(trimToNull(dto.getCountryCode()));
         tenant.setRegistrationId(trimToNull(dto.getRegistrationId()));
         tenant.setPlan(planCode);
-        tenant.setDefaultLocale("fr");
-        tenant.setDefaultCurrency("EUR");
-        tenant.setTimezone("Europe/Paris");
+        // International: currency, language and time zone chosen at signup, or deduced from the country
+        ReferenceDataService.CountryDefaults defaults = referenceData.defaultsFor(dto.getCountryCode());
+        tenant.setCountryCode(dto.getCountryCode() != null ? dto.getCountryCode().trim().toUpperCase() : null);
+        tenant.setDefaultCurrency(referenceData.isActiveCurrency(dto.getDefaultCurrency())
+                ? dto.getDefaultCurrency().trim().toUpperCase() : defaults.currency());
+        tenant.setDefaultLocale(referenceData.isSupportedLanguage(dto.getDefaultLocale())
+                ? dto.getDefaultLocale().trim() : defaults.language());
+        tenant.setTimezone(referenceData.isValidTimezone(dto.getTimezone()) ? dto.getTimezone().trim() : defaults.timezone());
         tenant.setActive(true);
         tenantRepository.save(tenant);
 
@@ -79,8 +90,8 @@ public class TenantRegistrationService {
         adminRole.setPermissions(new HashSet<>(allPermissions));
         roleRepository.save(adminRole);
 
-        String username = dto.getAdminEmail().trim().toLowerCase();
-        username = uniqueUsername(tenantId, username);
+        // The first account of a company is its administrator; it signs in with its email
+        String username = adminEmail;
 
         User user = new User();
         user.setTenantId(tenantId);
@@ -91,16 +102,18 @@ public class TenantRegistrationService {
         user.setLastName(dto.getAdminLastName() != null ? dto.getAdminLastName().trim() : null);
         user.setActive(true);
         user.setTenantAdmin(true);
+        user.setLocale(tenant.getDefaultLocale());
+        user.setTimezone(tenant.getTimezone());
         user.setRoles(Set.of(adminRole));
         userRepository.save(user);
 
         try {
             String displayName = (dto.getAdminFirstName() != null ? dto.getAdminFirstName() + " " : "") + (dto.getAdminLastName() != null ? dto.getAdminLastName() : "");
             if (displayName.isBlank()) displayName = username;
-            String adminEmail = dto.getAdminEmail().trim().toLowerCase();
-            mailService.sendWelcome(adminEmail, displayName, dto.getCompanyName().trim());
+
+            mailService.sendWelcome(adminEmail, tenant.getDefaultLocale(), displayName, dto.getCompanyName().trim());
             try {
-                mailService.sendOnboarding(adminEmail, displayName);
+                mailService.sendOnboarding(adminEmail, tenant.getDefaultLocale(), displayName);
             } catch (Exception e2) {
                 log.warn("Could not send onboarding email: {}", e2.getMessage());
             }
@@ -153,15 +166,6 @@ public class TenantRegistrationService {
             candidate = (base.length() + suffix.length() > MAX_CODE_LENGTH)
                     ? base.substring(0, MAX_CODE_LENGTH - suffix.length()) + suffix
                     : base + suffix;
-        }
-        return candidate;
-    }
-
-    private String uniqueUsername(String tenantId, String base) {
-        String candidate = base;
-        int n = 1;
-        while (userRepository.findByUsernameAndTenantIdAndDeletedAtIsNull(candidate, tenantId).isPresent()) {
-            candidate = base + n++;
         }
         return candidate;
     }

@@ -19,6 +19,7 @@ import java.util.Set;
 public class ProjectService {
 
     private final ProjectRepository projectRepo;
+    private final fr.aplose.erp.tenant.service.CurrentTenantService currentTenant;
     private final ThirdPartyRepository thirdPartyRepo;
     private final UserRepository userRepo;
 
@@ -76,7 +77,7 @@ public class ProjectService {
         p.setDateStart(dto.getDateStart());
         p.setDateEnd(dto.getDateEnd());
         p.setBudgetAmount(dto.getBudgetAmount());
-        p.setCurrencyCode(dto.getCurrencyCode());
+        p.setCurrencyCode(currentTenant.currencyOrDefault(dto.getCurrencyCode()));
         p.setBillingMode(dto.getBillingMode());
         p.setNotes(dto.getNotes());
         if (dto.getThirdPartyId() != null) {

@@ -217,7 +217,7 @@
                                 <label class="form-label">Country</label>
                                 <select class="form-select" th:field="*{countryCode}">
                                     <option value="">—</option>
-                                    <option th:each="item : ${countries}" th:value="${item.code}" th:text="${item.code + ' - ' + item.label}">FR - France</option>
+                                    <option th:each="item : ${@referenceData.countries()}" th:value="${item.code}" th:text="${item.label}">France</option>
                                 </select>
                             </div>
                         </div>
