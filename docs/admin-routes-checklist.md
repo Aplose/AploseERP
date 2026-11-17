@@ -1,6 +1,6 @@
 # Admin routes verification checklist
 
-Verify each route while logged in as an admin user (e.g. `admin` / `Admin1234!` on demo tenant).
+Verify each route while logged in as an admin user. In the `dev` profile only, `DevDataInitializer` sets the demo account `admin` / `Admin1234!` on the demo tenant; in production this account has an unusable placeholder password and must never receive this default.
 
 ## Core
 
@@ -94,6 +94,6 @@ Verify each route while logged in as an admin user (e.g. `admin` / `Admin1234!` 
 - **Sidebar links** in `layout/base.html` have been cross-checked: all `th:href` point to the routes above (dashboard, third-parties, contacts, proposals, orders, invoices, products, currencies, projects, agenda, admin/users, admin/roles, admin/settings, admin/email-templates, profile).
 - **Controllers** exist for every listed path; list/detail/edit/new mappings match this table.
 - **Product categories**: no sidebar entry; access via Products page link to `/products/categories`.
-- **Email templates**: only visible in sidebar for users with `ROLE_SUPER_ADMIN` or `SUPER_ADMIN`; demo user `admin` / `Admin1234!` on tenant Aplose has SUPER_ADMIN.
+- **Email templates**: only visible in sidebar for users with `ROLE_SUPER_ADMIN` or `SUPER_ADMIN`; the dev demo user `admin` (dev profile only) on tenant Aplose has SUPER_ADMIN.
 
 *Fill "Result" column after manual browser checks (e.g. 200, 404, 403) when logged in as admin.*

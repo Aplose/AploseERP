@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:mariadb://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:aploseErp}
     username: ${DB_USER:aploseErp}
-    password: ${DB_PASSWORD:aploseErp}
+    password: ${DB_PASSWORD}
     driver-class-name: org.mariadb.jdbc.Driver
     hikari:
       maximum-pool-size: 20
