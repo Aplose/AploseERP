@@ -1,5 +1,7 @@
 package fr.aplose.erp.modules.bank.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import fr.aplose.erp.core.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,6 +23,8 @@ public class BankAccount extends BaseEntity {
 
     @Column(name = "bic", length = 11)
     private String bic;
+
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
 
     @Column(name = "currency_code", length = 3, nullable = false)
     private String currencyCode = "EUR";

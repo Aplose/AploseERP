@@ -100,7 +100,11 @@ public class SalesOrderService {
             o.getLines().add(line);
         }
         o.recalculate();
-        return orderRepo.save(o);
+        SalesOrder saved = orderRepo.save(o);
+        // Marks the proposal as converted, so that it cannot be turned into a second order
+        p.setStatus("CONVERTED");
+        proposalRepo.save(p);
+        return saved;
     }
 
     @Transactional

@@ -1,5 +1,7 @@
 package fr.aplose.erp.modules.thirdparty.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import fr.aplose.erp.core.businessobject.BusinessObject;
 import fr.aplose.erp.core.entity.BaseEntity;
 import fr.aplose.erp.modules.contact.entity.ContactThirdPartyLink;
@@ -75,8 +77,12 @@ public class ThirdParty extends BaseEntity implements BusinessObject {
     @Column(name = "postal_code", length = 20)
     private String postalCode;
 
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
+
     @Column(name = "country_code", length = 2)
     private String countryCode;
+
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
 
     @Column(name = "currency_code", length = 3)
     private String currencyCode;

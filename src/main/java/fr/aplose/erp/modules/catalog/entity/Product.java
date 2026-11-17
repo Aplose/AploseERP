@@ -1,5 +1,7 @@
 package fr.aplose.erp.modules.catalog.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import fr.aplose.erp.core.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -40,6 +42,8 @@ public class Product extends BaseEntity {
 
     @Column(name = "purchase_price", precision = 19, scale = 4, nullable = false)
     private BigDecimal purchasePrice = BigDecimal.ZERO;
+
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
 
     @Column(name = "currency_code", length = 3, nullable = false)
     private String currencyCode = "EUR";

@@ -29,6 +29,8 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
     Optional<Invoice> findByReferenceAndTenantId(String reference, String tenantId);
 
+    boolean existsBySalesOrderIdAndTenantIdAndStatusNot(Long salesOrderId, String tenantId, String status);
+
     @Query("SELECT i FROM Invoice i WHERE i.tenantId = :tid " +
            "AND (LOWER(i.reference) LIKE LOWER(CONCAT('%',:q,'%')) " +
            "OR LOWER(i.thirdParty.name) LIKE LOWER(CONCAT('%',:q,'%')))")

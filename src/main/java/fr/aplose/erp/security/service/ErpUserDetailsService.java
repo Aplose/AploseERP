@@ -35,4 +35,18 @@ public class ErpUserDetailsService implements UserDetailsService {
         log.debug("Loaded user: {} for tenant: {}", username, tenantId);
         return new ErpUserDetails(user);
     }
+
+    /**
+     * Loads a user by id within its tenant, roles and permissions included.
+     * Used by the API key filter, which runs outside any open persistence session.
+     */
+    @Transactional(readOnly = true)
+    public java.util.Optional<ErpUserDetails> loadByIdAndTenant(Long userId, String tenantId) {
+        return userRepository.findByIdAndTenantId(userId, tenantId)
+                .filter(user -> user.getDeletedAt() == null)
+                .map(user -> {
+                    user.getRoles().forEach(role -> role.getPermissions().size());
+                    return new ErpUserDetails(user);
+                });
+    }
 }

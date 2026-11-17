@@ -1,5 +1,7 @@
 package fr.aplose.erp.modules.catalog.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +15,7 @@ import lombok.Setter;
 public class Currency {
 
     @Id
+    @JdbcTypeCode(SqlTypes.CHAR) // CHAR(n) in the schema
     @Column(name = "code", length = 3, nullable = false)
     private String code;
 

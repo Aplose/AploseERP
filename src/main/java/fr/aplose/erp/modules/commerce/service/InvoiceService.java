@@ -6,7 +6,9 @@ import fr.aplose.erp.modules.webhook.service.WebhookService;
 import fr.aplose.erp.modules.commerce.entity.Invoice;
 import fr.aplose.erp.modules.commerce.entity.InvoiceLine;
 import fr.aplose.erp.modules.commerce.entity.Payment;
+import fr.aplose.erp.modules.commerce.entity.SalesOrder;
 import fr.aplose.erp.modules.commerce.repository.InvoiceRepository;
+import fr.aplose.erp.modules.commerce.repository.SalesOrderRepository;
 import fr.aplose.erp.modules.commerce.web.dto.InvoiceDto;
 import fr.aplose.erp.modules.commerce.web.dto.LineDto;
 import fr.aplose.erp.modules.commerce.web.dto.PaymentDto;
@@ -32,6 +34,7 @@ import java.util.Set;
 public class InvoiceService {
 
     private final InvoiceRepository repo;
+    private final SalesOrderRepository orderRepo;
     private final ThirdPartyRepository thirdPartyRepo;
     private final ContactRepository contactRepo;
     private final ProductRepository productRepo;
@@ -61,6 +64,60 @@ public class InvoiceService {
         inv.setReference(generateReference(tid, dto.getType()));
         inv.setCreatedById(currentUserId);
         applyDto(inv, dto, tid);
+        inv = repo.save(inv);
+        webhookService.trigger(tid, "INVOICE.CREATED", invoicePayload(inv));
+        return inv;
+    }
+
+    /**
+     * Creates a draft sales invoice from an order: customer, contact, currency, discount and lines
+     * are copied, and the invoice keeps a link to its order. An order can only be invoiced once
+     * (unless its previous invoice was cancelled).
+     */
+    @Transactional
+    public Invoice createFromOrder(Long orderId, Long currentUserId) {
+        String tid = TenantContext.getCurrentTenantId();
+        SalesOrder o = orderRepo.findByIdAndTenantId(orderId, tid)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+        if ("CANCELLED".equals(o.getStatus()) || "DRAFT".equals(o.getStatus())) {
+            throw new IllegalStateException("A " + o.getStatus() + " order cannot be invoiced");
+        }
+        if (repo.existsBySalesOrderIdAndTenantIdAndStatusNot(orderId, tid, "CANCELLED")) {
+            throw new IllegalStateException("Order " + o.getReference() + " is already invoiced");
+        }
+
+        Invoice inv = new Invoice();
+        inv.setType("SALES");
+        inv.setReference(generateReference(tid, "SALES"));
+        inv.setCreatedById(currentUserId);
+        inv.setSalesOrder(o);
+        inv.setThirdParty(o.getThirdParty());
+        inv.setContact(o.getContact());
+        inv.setCurrencyCode(o.getCurrencyCode());
+        inv.setExchangeRate(o.getExchangeRate());
+        inv.setDiscountAmount(o.getDiscountAmount());
+        inv.setNotes(o.getNotes());
+        inv.setTerms(o.getTerms());
+        LocalDate today = LocalDate.now();
+        inv.setDateIssued(today);
+        Short terms = o.getThirdParty() != null ? o.getThirdParty().getPaymentTerms() : null;
+        inv.setDateDue(today.plusDays(terms != null ? terms : 30));
+
+        short sortOrder = 0;
+        for (var ol : o.getLines()) {
+            InvoiceLine line = new InvoiceLine();
+            line.setTenantId(tid);
+            line.setInvoice(inv);
+            line.setProduct(ol.getProduct());
+            line.setSortOrder(sortOrder++);
+            line.setDescription(ol.getDescription());
+            line.setQuantity(ol.getQuantity());
+            line.setUnitPrice(ol.getUnitPrice());
+            line.setDiscountPct(ol.getDiscountPct());
+            line.setVatRate(ol.getVatRate());
+            inv.getLines().add(line);
+        }
+        inv.recalculate();
         inv = repo.save(inv);
         webhookService.trigger(tid, "INVOICE.CREATED", invoicePayload(inv));
         return inv;

@@ -1,5 +1,8 @@
 package fr.aplose.erp.config;
 
+import fr.aplose.erp.tenant.filter.AuthenticatedTenantFilter;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
+
 import fr.aplose.erp.security.api.ApiKeyAuthenticationFilter;
 import fr.aplose.erp.security.service.ErpUserDetailsService;
 import lombok.RequiredArgsConstructor;
@@ -67,6 +70,8 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            // After every authentication mechanism (session, API key, HTTP Basic), before authorization
+            .addFilterBefore(new AuthenticatedTenantFilter(), AuthorizationFilter.class)
             .httpBasic(basic -> {})
             .formLogin(form -> form
                 .loginPage("/login")

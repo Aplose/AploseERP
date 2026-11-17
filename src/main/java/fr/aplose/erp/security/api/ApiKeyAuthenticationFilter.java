@@ -2,7 +2,7 @@ package fr.aplose.erp.security.api;
 
 import fr.aplose.erp.security.service.ApiKeyService;
 import fr.aplose.erp.security.service.ErpUserDetails;
-import fr.aplose.erp.security.repository.UserRepository;
+import fr.aplose.erp.security.service.ErpUserDetailsService;
 import fr.aplose.erp.tenant.context.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -34,7 +34,7 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final ApiKeyService apiKeyService;
-    private final UserRepository userRepository;
+    private final ErpUserDetailsService userDetailsService;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -72,10 +72,10 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 
         ApiKeyService.ApiKeyAuthResult authResult = result.get();
         TenantContext.setCurrentTenantId(authResult.tenantId());
-        userRepository.findByIdAndTenantId(authResult.userId(), authResult.tenantId())
-                .ifPresent(user -> {
-                    user.getRoles().forEach(role -> role.getPermissions().size());
-                    ErpUserDetails details = new ErpUserDetails(user);
+        // Loaded in a transaction: this filter runs before any persistence session is open,
+        // so reading the roles directly from the entity failed with LazyInitializationException.
+        userDetailsService.loadByIdAndTenant(authResult.userId(), authResult.tenantId())
+                .ifPresent(details -> {
                     SecurityContextHolder.getContext().setAuthentication(
                             new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities()));
                 });
