@@ -94,7 +94,8 @@ public class DolibarrProductImporter {
                 p.setPurchasePrice(priceBuy != null ? priceBuy : BigDecimal.ZERO);
                 p.setCurrencyCode(DolibarrImportHelper.getString(m, "currency_code") != null ? DolibarrImportHelper.getString(m, "currency_code") : "EUR");
                 BigDecimal tva = DolibarrImportHelper.getBigDecimal(m, "tva_tx");
-                p.setVatRate(tva != null ? tva : BigDecimal.ZERO);
+                // Dolibarr stores 20 for 20 %, AploseERP stores rates as fractions (0.20)
+                p.setVatRate(tva != null ? tva.movePointLeft(2) : BigDecimal.ZERO);
                 p.setSellable(DolibarrImportHelper.getBoolean(m, "tosell"));
                 p.setPurchasable(DolibarrImportHelper.getBoolean(m, "tobuy"));
                 p.setBarcode(DolibarrImportHelper.getString(m, "barcode"));

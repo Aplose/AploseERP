@@ -143,6 +143,8 @@ class DolibarrImportIntegrationTest {
             assertThat(inv.getAmountRemaining()).isEqualByComparingTo("70");
             assertThat(inv.getStatus()).isEqualTo("PARTIALLY_PAID");
             assertThat(inv.getType()).isEqualTo("SALES");
+            assertThat(productRepository.findByCodeAndTenantIdAndDeletedAtIsNull("PAIN-01", TENANT).orElseThrow().getVatRate())
+                    .as("5.5 % stored as a fraction").isEqualByComparingTo("0.055");
             assertThat(inv.getThirdParty().getCode()).isEqualTo("CU2601-0001");
 
             List<Payment> payments = paymentRepository.findByInvoiceIdOrderByPaymentDateAsc(inv.getId());
