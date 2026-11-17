@@ -53,9 +53,18 @@ public final class DolibarrImportHelper {
         }
     }
 
+    /**
+     * Parse a Dolibarr date. The REST API returns most dates as Unix timestamps (seconds),
+     * some (e.g. invoice payments) as "yyyy-MM-dd HH:mm:ss" strings; both are supported.
+     */
     public static LocalDate getLocalDate(Map<String, Object> m, String key) {
         String s = getString(m, key);
         if (s == null || s.isBlank()) return null;
+        if (s.matches("-?\\d{1,12}")) {
+            long epoch = Long.parseLong(s);
+            if (epoch == 0) return null;
+            return java.time.Instant.ofEpochSecond(epoch).atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+        }
         try {
             return LocalDate.parse(s.substring(0, Math.min(10, s.length())), DateTimeFormatter.ISO_LOCAL_DATE);
         } catch (Exception e) {
@@ -76,6 +85,12 @@ public final class DolibarrImportHelper {
         Long id = getLong(m, "rowid");
         if (id != null) return id;
         return getLong(m, "id");
+    }
+
+    /** Dolibarr status code: "status" in recent versions, "statut" in older ones. */
+    public static Integer getStatus(Map<String, Object> m) {
+        Integer s = getInteger(m, "status");
+        return s != null ? s : getInteger(m, "statut");
     }
 
     /** Build code from code_client or code_fournisseur or rowid. */

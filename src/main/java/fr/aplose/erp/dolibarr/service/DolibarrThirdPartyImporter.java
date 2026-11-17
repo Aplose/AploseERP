@@ -1,8 +1,6 @@
 package fr.aplose.erp.dolibarr.service;
 
 import fr.aplose.erp.dolibarr.client.DolibarrApiClient;
-import fr.aplose.erp.dolibarr.entity.DolibarrImportMapping;
-import fr.aplose.erp.dolibarr.repository.DolibarrImportMappingRepository;
 import fr.aplose.erp.modules.thirdparty.entity.ThirdParty;
 import fr.aplose.erp.modules.thirdparty.repository.ThirdPartyRepository;
 import fr.aplose.erp.tenant.context.TenantContext;
@@ -20,18 +18,23 @@ public class DolibarrThirdPartyImporter {
     private final DolibarrApiClient client;
     private final DolibarrImportLogService logService;
     private final ThirdPartyRepository thirdPartyRepository;
-    private final DolibarrImportMappingRepository mappingRepository;
+    private final DolibarrMappingService mappingService;
 
     public void importThirdParties(Long runId) {
         String tenantId = TenantContext.getCurrentTenantId();
         if (tenantId == null) return;
 
-        List<Map<String, Object>> list = client.getList("thirdparties", Map.of("limit", "10000", "sortfield", "t.rowid"));
+        List<Map<String, Object>> list = client.getAll("thirdparties", Map.of("sortfield", "t.rowid"));
         if (list == null) return;
 
+        int alreadyImported = 0;
         for (Map<String, Object> m : list) {
             Long doliId = DolibarrImportHelper.getDolibarrId(m);
             if (doliId == null) continue;
+            if (mappingService.isImported(tenantId, "thirdparties", doliId)) {
+                alreadyImported++;
+                continue;
+            }
 
             try {
                 String code = DolibarrImportHelper.thirdPartyCode(m);
@@ -42,8 +45,10 @@ public class DolibarrThirdPartyImporter {
                     continue;
                 }
 
-                if (thirdPartyRepository.findByCodeAndTenantIdAndDeletedAtIsNull(code, tenantId).isPresent()) {
-                    logService.logSkip(runId, "THIRD_PARTIES", String.valueOf(doliId), "Code already exists: " + code);
+                var existing = thirdPartyRepository.findByCodeAndTenantIdAndDeletedAtIsNull(code, tenantId);
+                if (existing.isPresent()) {
+                    mappingService.record(tenantId, runId, "thirdparties", doliId, "THIRD_PARTY", existing.get().getId());
+                    logService.logInfo(runId, "THIRD_PARTIES", "Dolibarr id " + doliId + " rattaché à l'existant (code " + code + ")");
                     continue;
                 }
 
@@ -83,17 +88,11 @@ public class DolibarrThirdPartyImporter {
 
                 ThirdParty saved = thirdPartyRepository.save(tp);
 
-                DolibarrImportMapping mapping = new DolibarrImportMapping();
-                mapping.setTenantId(tenantId);
-                mapping.setImportRunId(runId);
-                mapping.setDolibarrEntity("thirdparties");
-                mapping.setDolibarrId(doliId);
-                mapping.setAploseEntity("THIRD_PARTY");
-                mapping.setAploseId(saved.getId());
-                mappingRepository.save(mapping);
+                mappingService.record(tenantId, runId, "thirdparties", doliId, "THIRD_PARTY", saved.getId());
             } catch (Exception e) {
                 logService.logError(runId, "THIRD_PARTIES", String.valueOf(doliId), e.getMessage(), null);
             }
         }
+        logService.logInfo(runId, "THIRD_PARTIES", alreadyImported + " tiers déjà importé(s) lors d'un import précédent");
     }
 }

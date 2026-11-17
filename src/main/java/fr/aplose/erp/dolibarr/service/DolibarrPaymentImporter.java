@@ -1,6 +1,7 @@
 package fr.aplose.erp.dolibarr.service;
 
 import fr.aplose.erp.dolibarr.client.DolibarrApiClient;
+import fr.aplose.erp.dolibarr.entity.DolibarrImportMapping;
 import fr.aplose.erp.dolibarr.repository.DolibarrImportMappingRepository;
 import fr.aplose.erp.modules.commerce.entity.Invoice;
 import fr.aplose.erp.modules.commerce.entity.Payment;
@@ -14,11 +15,20 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 
+/**
+ * Imports customer invoice payments.
+ * <p>
+ * The Dolibarr REST API has no global payment list: payments are read per invoice with
+ * GET invoices/{id}/payments, for every invoice already imported. Such a payment has no id in the
+ * API answer, so it is identified by its Dolibarr reference (PAYxxxx) within its invoice.
+ */
 @Service
 @RequiredArgsConstructor
 public class DolibarrPaymentImporter {
+
+    private static final String STEP = "PAYMENTS";
 
     private final DolibarrApiClient client;
     private final DolibarrImportLogService logService;
@@ -30,37 +40,42 @@ public class DolibarrPaymentImporter {
         String tenantId = TenantContext.getCurrentTenantId();
         if (tenantId == null) return;
 
-        try {
-            List<Map<String, Object>> list = client.getList("payments", Map.of("limit", "5000", "sortfield", "rowid"));
-            if (list == null) return;
-
-            for (Map<String, Object> m : list) {
-                Long doliId = DolibarrImportHelper.getDolibarrId(m);
-                if (doliId == null) continue;
-                try {
-                    Long fkFacture = DolibarrImportHelper.getLong(m, "fk_facture");
-                    if (fkFacture == null) continue;
-                    Optional<Long> invId = mappingRepository.findAploseId(tenantId, runId, "invoices", fkFacture);
-                    if (invId.isEmpty()) continue;
-                    Invoice inv = invoiceRepository.findByIdAndTenantId(invId.get(), tenantId).orElse(null);
-                    if (inv == null) continue;
-
+        int created = 0;
+        int alreadyImported = 0;
+        for (DolibarrImportMapping invoiceMapping : mappingRepository.findByTenantIdAndDolibarrEntity(tenantId, "invoices")) {
+            Long doliInvoiceId = invoiceMapping.getDolibarrId();
+            Invoice inv = invoiceRepository.findByIdAndTenantId(invoiceMapping.getAploseId(), tenantId).orElse(null);
+            if (inv == null) continue;
+            try {
+                List<Map<String, Object>> payments = client.getList("invoices/" + doliInvoiceId + "/payments", Map.of());
+                List<Payment> existing = paymentRepository.findByInvoiceIdOrderByPaymentDateAsc(inv.getId());
+                for (Map<String, Object> m : payments) {
+                    if ("discount".equals(DolibarrImportHelper.getString(m, "typeline"))) continue;
+                    String ref = DolibarrImportHelper.getString(m, "ref");
+                    if (ref != null && existing.stream().anyMatch(p -> Objects.equals(ref, p.getReference()))) {
+                        alreadyImported++;
+                        continue;
+                    }
                     Payment pay = new Payment();
                     pay.setTenantId(tenantId);
                     pay.setInvoice(inv);
-                    pay.setAmount(DolibarrImportHelper.getBigDecimal(m, "amount") != null ? DolibarrImportHelper.getBigDecimal(m, "amount") : BigDecimal.ZERO);
-                    pay.setCurrencyCode(DolibarrImportHelper.getString(m, "currency_code") != null ? DolibarrImportHelper.getString(m, "currency_code") : "EUR");
-                    pay.setPaymentDate(DolibarrImportHelper.getLocalDate(m, "datep") != null ? DolibarrImportHelper.getLocalDate(m, "datep") : LocalDate.now());
-                    pay.setPaymentMethod(DolibarrImportHelper.getString(m, "payment_method") != null ? DolibarrImportHelper.getString(m, "payment_method") : "BANK");
-                    pay.setReference(DolibarrImportHelper.getString(m, "num_payment"));
-                    pay.setNotes(DolibarrImportHelper.getString(m, "note"));
+                    BigDecimal amount = DolibarrImportHelper.getBigDecimal(m, "amount");
+                    pay.setAmount(amount != null ? amount : BigDecimal.ZERO);
+                    pay.setCurrencyCode(inv.getCurrencyCode() != null ? inv.getCurrencyCode() : "EUR");
+                    LocalDate date = DolibarrImportHelper.getLocalDate(m, "date");
+                    pay.setPaymentDate(date != null ? date : LocalDate.now());
+                    String type = DolibarrImportHelper.getString(m, "type");
+                    pay.setPaymentMethod(type != null ? type : "BANK");
+                    pay.setReference(ref);
+                    String num = DolibarrImportHelper.getString(m, "num");
+                    if (num != null && !num.isBlank()) pay.setNotes("N° " + num);
                     paymentRepository.save(pay);
-                } catch (Exception e) {
-                    logService.logError(runId, "PAYMENTS", String.valueOf(doliId), e.getMessage(), null);
+                    created++;
                 }
+            } catch (Exception e) {
+                logService.logError(runId, STEP, String.valueOf(doliInvoiceId), e.getMessage(), null);
             }
-        } catch (Exception e) {
-            logService.logWarn(runId, "PAYMENTS", null, "Payments import skipped: " + e.getMessage());
         }
+        logService.logInfo(runId, STEP, created + " paiement(s) importé(s), " + alreadyImported + " déjà présent(s)");
     }
 }

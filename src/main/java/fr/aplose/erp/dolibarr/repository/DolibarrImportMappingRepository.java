@@ -19,5 +19,11 @@ public interface DolibarrImportMappingRepository extends JpaRepository<DolibarrI
     Optional<Long> findAploseId(@Param("tid") String tenantId, @Param("runId") Long importRunId,
                                 @Param("entity") String dolibarrEntity, @Param("dolibarrId") Long dolibarrId);
 
+    /** Latest mapping of a Dolibarr record for a tenant, whatever the import run that created it. */
+    Optional<DolibarrImportMapping> findFirstByTenantIdAndDolibarrEntityAndDolibarrIdOrderByIdDesc(
+            String tenantId, String dolibarrEntity, Long dolibarrId);
+
+    List<DolibarrImportMapping> findByTenantIdAndDolibarrEntity(String tenantId, String dolibarrEntity);
+
     List<DolibarrImportMapping> findByTenantIdAndImportRunId(String tenantId, Long importRunId);
 }

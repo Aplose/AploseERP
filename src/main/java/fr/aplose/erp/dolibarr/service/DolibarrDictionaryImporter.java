@@ -42,7 +42,7 @@ public class DolibarrDictionaryImporter {
             String resource = entry.getKey();
             String dictType = entry.getValue();
             try {
-                List<Map<String, Object>> list = client.getList(resource, Map.of("limit", "5000", "sortfield", "rowid"));
+                List<Map<String, Object>> list = client.getAll(resource, Map.of("sortfield", "rowid"));
                 if (list == null || list.isEmpty()) continue;
 
                 int count = 0;

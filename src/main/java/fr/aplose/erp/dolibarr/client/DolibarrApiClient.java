@@ -20,8 +20,20 @@ public interface DolibarrApiClient {
      */
     boolean testConnection();
 
+    /** Forget the settings given to {@link #configure} for the current thread. */
+    void clear();
+
     /**
-     * GET list from Dolibarr API. Handles pagination by requesting with limit/sortfield.
+     * GET every record of a resource, page by page (limit/page parameters), until a page comes back incomplete.
+     * Any "limit" or "page" in queryParams is overridden.
+     *
+     * @return all records; empty list if there is none
+     */
+    List<Map<String, Object>> getAll(String resource, Map<String, String> queryParams);
+
+    /**
+     * GET one page from Dolibarr API (no pagination: use {@link #getAll} to read a whole resource).
+     * A 404 answer (empty list on older Dolibarr versions) gives an empty list.
      *
      * @param resource   e.g. "thirdparties", "products", "contacts"
      * @param queryParams optional (limit, sortfield, sortorder, sqlfilters...)
