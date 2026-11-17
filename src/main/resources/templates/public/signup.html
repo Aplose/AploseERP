@@ -124,21 +124,32 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label" th:text="#{signup.countryCode}">Pays</label>
-                                <select class="form-select" th:field="*{countryCode}">
+                                <select class="form-select" th:field="*{countryCode}" id="countryCode" required
+                                        th:classappend="${#fields.hasErrors('countryCode')} ? 'is-invalid'">
                                     <option value="">—</option>
-                                    <option value="FR">France</option>
-                                    <option value="BE">Belgique</option>
-                                    <option value="CH">Suisse</option>
-                                    <option value="LU">Luxembourg</option>
-                                    <option value="DE">Allemagne</option>
-                                    <option value="ES">Espagne</option>
-                                    <option value="IT">Italie</option>
-                                    <option value="GB">Royaume-Uni</option>
-                                    <option value="US">États-Unis</option>
-                                    <option value="CA">Canada</option>
-                                    <option value="MA">Maroc</option>
-                                    <option value="TN">Tunisie</option>
-                                    <option value="OTHER">Autre</option>
+                                    <option th:each="c : ${@referenceData.countries()}" th:value="${c.code}" th:text="${c.label}">France</option>
+                                </select>
+                                <div class="invalid-feedback" th:errors="*{countryCode}"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{signup.defaultCurrency}">Devise</label>
+                                <select class="form-select" th:field="*{defaultCurrency}" id="defaultCurrency">
+                                    <option value="" th:text="#{signup.fromCountry}">Selon le pays</option>
+                                    <option th:each="c : ${@referenceData.currencies()}" th:value="${c.code}" th:text="${c.code + ' - ' + c.label}">EUR - Euro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{signup.defaultLocale}">Langue</label>
+                                <select class="form-select" th:field="*{defaultLocale}" id="defaultLocale">
+                                    <option value="" th:text="#{signup.fromCountry}">Selon le pays</option>
+                                    <option th:each="l : ${@referenceData.languages()}" th:value="${l.code}" th:text="${l.label}">Français</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{signup.timezone}">Fuseau horaire</label>
+                                <select class="form-select" th:field="*{timezone}" id="timezone">
+                                    <option value="" th:text="#{signup.fromCountry}">Selon le pays</option>
+                                    <option th:each="z : ${@referenceData.timezones()}" th:value="${z}" th:text="${z}">Europe/Paris</option>
                                 </select>
                             </div>
                             <div class="col-12">
@@ -200,6 +211,30 @@
     </div>
 
     <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+    <script>
+        (function () {
+            var country = document.getElementById('countryCode');
+            var currency = document.getElementById('defaultCurrency');
+            var language = document.getElementById('defaultLocale');
+            var timezone = document.getElementById('timezone');
+            // Time zone of the visitor's browser, when the form has none yet
+            try {
+                var browserZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                if (timezone && !timezone.value && browserZone) timezone.value = browserZone;
+            } catch (e) { /* old browser */ }
+            if (country) country.addEventListener('change', function () {
+                if (!country.value) return;
+                fetch('/signup/defaults?country=' + encodeURIComponent(country.value))
+                    .then(function (r) { return r.json(); })
+                    .then(function (d) {
+                        if (currency && d.currency) currency.value = d.currency;
+                        if (language && d.language) language.value = d.language;
+                        if (timezone && d.timezone && d.timezone !== 'UTC' && !timezone.dataset.touched) timezone.value = d.timezone;
+                    });
+            });
+            if (timezone) timezone.addEventListener('change', function () { timezone.dataset.touched = '1'; });
+        })();
+    </script>
     <script th:inline="javascript">
         (function() {
             var formEl = document.getElementById('signup-form');

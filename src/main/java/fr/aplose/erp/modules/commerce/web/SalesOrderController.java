@@ -26,6 +26,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class SalesOrderController {
 
     private final SalesOrderService service;
+    private final fr.aplose.erp.tenant.service.CurrentTenantService currentTenant;
     private final DictionaryService dictionaryService;
 
     @GetMapping
@@ -52,6 +53,7 @@ public class SalesOrderController {
     @PreAuthorize("hasAuthority('SALES_ORDER_CREATE')")
     public String newForm(Model model) {
         var dto = new SalesOrderDto();
+        dto.setCurrencyCode(currentTenant.defaultCurrency());
         dto.setDateOrdered(java.time.LocalDate.now());
         model.addAttribute("order", dto);
         model.addAttribute("currencies", dictionaryService.findByType(DictionaryType.CURRENCY));

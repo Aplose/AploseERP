@@ -109,6 +109,7 @@ public class LeaveRequestService {
         try {
             mailService.sendLeaveRequestSubmittedToValidator(
                     validator.getEmail(),
+                    validator.getLocale(),
                     validator.getDisplayName(),
                     lr.getRequester().getDisplayName(),
                     lr.getLeaveType().getLabel(),
@@ -157,6 +158,7 @@ public class LeaveRequestService {
         try {
             mailService.sendLeaveRequestDeniedToRequester(
                     lr.getRequester().getEmail(),
+                    lr.getRequester().getLocale(),
                     lr.getRequester().getDisplayName(),
                     lr.getResponseComment(),
                     requestUrl

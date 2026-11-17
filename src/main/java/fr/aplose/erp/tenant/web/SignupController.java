@@ -1,5 +1,6 @@
 package fr.aplose.erp.tenant.web;
 
+import fr.aplose.erp.i18n.service.ReferenceDataService;
 import fr.aplose.erp.tenant.plan.SubscriptionPlan;
 import fr.aplose.erp.tenant.service.TenantRegistrationService;
 import fr.aplose.erp.tenant.web.dto.SignupDto;
@@ -13,23 +14,33 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequiredArgsConstructor
 public class SignupController {
 
-    private static final String SESSION_TENANT_ID = "TENANT_ID";
-
     private final TenantRegistrationService tenantRegistrationService;
+    private final ReferenceDataService referenceData;
 
     @GetMapping("/signup")
     public String form(@RequestParam(required = false) String plan, Model model) {
         SignupDto dto = new SignupDto();
         dto.setPlan(SubscriptionPlan.fromCode(plan).getCode());
+        // Pre-select the visitor's language when the interface offers it
+        String lang = org.springframework.context.i18n.LocaleContextHolder.getLocale().getLanguage();
+        if (referenceData.isSupportedLanguage(lang)) dto.setDefaultLocale(lang);
         model.addAttribute("signup", dto);
         model.addAttribute("plans", SubscriptionPlan.values());
         return "public/signup";
+    }
+
+    /** Currency, language and time zone suggested for a country (used by the signup form). */
+    @GetMapping(value = "/signup/defaults", produces = "application/json")
+    @ResponseBody
+    public ReferenceDataService.CountryDefaults defaults(@RequestParam String country) {
+        return referenceData.defaultsFor(country);
     }
 
     @PostMapping("/signup")
@@ -53,7 +64,6 @@ public class SignupController {
             model.addAttribute("plans", SubscriptionPlan.values());
             return "public/signup";
         }
-        request.getSession(true).setAttribute(SESSION_TENANT_ID, tenantId);
         ra.addFlashAttribute("message", "signup.success");
         return "redirect:/login?registered";
     }

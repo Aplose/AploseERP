@@ -30,29 +30,29 @@ public class MailService {
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
 
-    public void sendWelcome(String toEmail, String userName, String companyName) {
+    public void sendWelcome(String toEmail, String locale, String userName, String companyName) {
         String loginUrl = baseUrl + "/login";
         Map<String, String> vars = Map.of(
                 "userName", userName != null ? userName : "",
                 "companyName", companyName != null ? companyName : "",
                 "loginUrl", loginUrl
         );
-        emailTemplateService.findByKeyAndLocale("welcome", "fr").ifPresent(t -> sendTemplate(toEmail, t, vars));
+        emailTemplateService.findBest("welcome", locale).ifPresent(t -> sendTemplate(toEmail, t, vars));
     }
 
-    public void sendOnboarding(String toEmail, String userName) {
+    public void sendOnboarding(String toEmail, String locale, String userName) {
         String loginUrl = baseUrl + "/login";
         Map<String, String> vars = Map.of(
                 "userName", userName != null ? userName : "",
                 "loginUrl", loginUrl
         );
-        emailTemplateService.findByKeyAndLocale("onboarding", "fr").ifPresent(t -> sendTemplate(toEmail, t, vars));
+        emailTemplateService.findBest("onboarding", locale).ifPresent(t -> sendTemplate(toEmail, t, vars));
     }
 
     /**
      * Sends email to the leave validator when a request is submitted.
      */
-    public void sendLeaveRequestSubmittedToValidator(String validatorEmail, String validatorName, String requesterName,
+    public void sendLeaveRequestSubmittedToValidator(String validatorEmail, String validatorLocale, String validatorName, String requesterName,
                                                      String leaveTypeLabel, String dateStart, String dateEnd, String requestUrl) {
         Map<String, String> vars = Map.of(
                 "validatorName", validatorName != null ? validatorName : "",
@@ -62,19 +62,19 @@ public class MailService {
                 "dateEnd", dateEnd != null ? dateEnd : "",
                 "requestUrl", requestUrl != null ? requestUrl : ""
         );
-        emailTemplateService.findByKeyAndLocale("leave.request.submitted", "fr").ifPresent(t -> sendTemplate(validatorEmail, t, vars));
+        emailTemplateService.findBest("leave.request.submitted", validatorLocale).ifPresent(t -> sendTemplate(validatorEmail, t, vars));
     }
 
     /**
      * Sends email to the requester when their leave request is denied.
      */
-    public void sendLeaveRequestDeniedToRequester(String requesterEmail, String requesterName, String responseComment, String requestUrl) {
+    public void sendLeaveRequestDeniedToRequester(String requesterEmail, String requesterLocale, String requesterName, String responseComment, String requestUrl) {
         Map<String, String> vars = Map.of(
                 "requesterName", requesterName != null ? requesterName : "",
                 "responseComment", responseComment != null ? responseComment : "",
                 "requestUrl", requestUrl != null ? requestUrl : ""
         );
-        emailTemplateService.findByKeyAndLocale("leave.request.denied", "fr").ifPresent(t -> sendTemplate(requesterEmail, t, vars));
+        emailTemplateService.findBest("leave.request.denied", requesterLocale).ifPresent(t -> sendTemplate(requesterEmail, t, vars));
     }
 
     public String getBaseUrl() {

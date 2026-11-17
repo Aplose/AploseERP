@@ -1,5 +1,8 @@
 package fr.aplose.erp.security.service;
 
+import fr.aplose.erp.tenant.entity.Tenant;
+import fr.aplose.erp.tenant.repository.TenantRepository;
+
 import fr.aplose.erp.security.entity.Role;
 import fr.aplose.erp.security.entity.User;
 import fr.aplose.erp.security.repository.RoleRepository;
@@ -27,6 +30,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TenantRepository tenantRepository;
 
     @Transactional(readOnly = true)
     public Page<User> findAll(Pageable pageable) {
@@ -53,10 +57,11 @@ public class UserService {
     public User create(UserCreateDto dto) {
         String tenantId = TenantContext.getCurrentTenantId();
 
-        if (userRepository.findByUsernameAndTenantIdAndDeletedAtIsNull(dto.getUsername(), tenantId).isPresent()) {
+        // One login page for all companies: email and username must be unique platform-wide
+        if (userRepository.isLoginTaken(dto.getUsername().trim(), null)) {
             throw new IllegalStateException("Username already taken: " + dto.getUsername());
         }
-        if (userRepository.findByEmailAndTenantIdAndDeletedAtIsNull(dto.getEmail(), tenantId).isPresent()) {
+        if (userRepository.isLoginTaken(dto.getEmail().trim(), null)) {
             throw new IllegalStateException("Email already in use: " + dto.getEmail());
         }
         if (!dto.getPassword().equals(dto.getConfirmPassword())) {
@@ -71,8 +76,12 @@ public class UserService {
         user.setFirstName(dto.getFirstName());
         user.setLastName(dto.getLastName());
         user.setPhone(dto.getPhone());
-        user.setLocale(dto.getLocale());
-        user.setTimezone(dto.getTimezone());
+        // A new user speaks the company's language and lives in its time zone unless told otherwise
+        Tenant company = tenantRepository.findById(tenantId).orElse(null);
+        user.setLocale(dto.getLocale() != null && !dto.getLocale().isBlank() ? dto.getLocale()
+                : company != null ? company.getDefaultLocale() : null);
+        user.setTimezone(dto.getTimezone() != null && !dto.getTimezone().isBlank() ? dto.getTimezone()
+                : company != null ? company.getTimezone() : null);
         user.setTenantAdmin(dto.isTenantAdmin());
         user.setActive(true);
         user.setRoles(resolveRoles(dto.getRoleIds(), tenantId));
@@ -85,9 +94,9 @@ public class UserService {
         User user = findById(id);
 
         String tenantId = TenantContext.getCurrentTenantId();
-        userRepository.findByEmailAndTenantIdAndDeletedAtIsNull(dto.getEmail(), tenantId)
-                .filter(u -> !u.getId().equals(id))
-                .ifPresent(u -> { throw new IllegalStateException("Email already in use: " + dto.getEmail()); });
+        if (userRepository.isLoginTaken(dto.getEmail().trim(), id)) {
+            throw new IllegalStateException("Email already in use: " + dto.getEmail());
+        }
 
         user.setEmail(dto.getEmail().trim().toLowerCase());
         user.setFirstName(dto.getFirstName());

@@ -28,6 +28,7 @@ import java.util.List;
 public class BankController {
 
     private final BankAccountService bankAccountService;
+    private final fr.aplose.erp.tenant.service.CurrentTenantService currentTenant;
     private final CurrencyRepository currencyRepository;
 
     @GetMapping
@@ -40,7 +41,9 @@ public class BankController {
     @GetMapping("/accounts/new")
     @PreAuthorize("hasAuthority('BANK_CREATE')")
     public String newAccountForm(Model model) {
-        model.addAttribute("account", new BankAccount());
+        BankAccount newAccount = new BankAccount();
+        newAccount.setCurrencyCode(currentTenant.defaultCurrency());
+        model.addAttribute("account", newAccount);
         model.addAttribute("currencies", currencyRepository.findByActiveTrueOrderByCodeAsc());
         return "modules/bank/account-form";
     }

@@ -28,7 +28,8 @@ public class InvoiceDto {
 
     @NotBlank
     @Size(max = 3)
-    private String currencyCode = "EUR";
+    /** Empty = the company's default currency. */
+    private String currencyCode;
 
     private BigDecimal discountAmount = BigDecimal.ZERO;
 

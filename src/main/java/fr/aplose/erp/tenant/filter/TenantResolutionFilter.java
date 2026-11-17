@@ -4,7 +4,6 @@ import fr.aplose.erp.tenant.context.TenantContext;
 import fr.aplose.erp.tenant.repository.TenantRepository;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
@@ -14,14 +13,12 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * Resolves the current tenant before any request processing.
- *
- * Resolution order:
- *  1. Subdomain: acme.erp.aplose.fr -> code "acme"
- *  2. URL path prefix: /t/acme/... -> code "acme"
- *  3. Session attribute TENANT_ID (dev / localhost)
- *  4. HTTP header X-Tenant-ID (future API clients)
- *  5. Fallback: first active tenant in DB (single-tenant dev mode)
+ * Resolves the tenant of anonymous requests, before any request processing.
+ * <p>
+ * There is one access point for every company: no sub-domain per company, one login page.
+ * A logged-in user's company is set by {@link AuthenticatedTenantFilter} (from the account),
+ * and an API key carries its company. The only anonymous pages that need a company are the
+ * public forms, reached at /t/{company code}/form/{form code}.
  */
 @Slf4j
 @Component
@@ -29,8 +26,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class TenantResolutionFilter implements Filter {
 
-    private static final String SESSION_ATTR = "TENANT_ID";
-    private static final String HEADER_NAME  = "X-Tenant-ID";
     private static final String PATH_PREFIX  = "/t/";
 
     private final TenantRepository tenantRepository;
@@ -54,18 +49,6 @@ public class TenantResolutionFilter implements Filter {
     }
 
     private String resolve(HttpServletRequest req) {
-        // 1. Subdomain
-        String host = req.getServerName();
-        if (host != null && host.contains(".")) {
-            String subdomain = host.split("\\.")[0];
-            if (!"www".equals(subdomain) && !"localhost".equals(subdomain)) {
-                return tenantRepository.findByCodeAndActiveTrue(subdomain)
-                        .map(t -> t.getId())
-                        .orElse(null);
-            }
-        }
-
-        // 2. URL path prefix /t/{code}/
         String uri = req.getRequestURI();
         if (uri.startsWith(PATH_PREFIX)) {
             String[] parts = uri.substring(PATH_PREFIX.length()).split("/", 2);
@@ -75,27 +58,6 @@ public class TenantResolutionFilter implements Filter {
                         .orElse(null);
             }
         }
-
-        // 3. Session attribute
-        HttpSession session = req.getSession(false);
-        if (session != null) {
-            Object attrVal = session.getAttribute(SESSION_ATTR);
-            if (attrVal instanceof String tenantId && !tenantId.isBlank()) {
-                return tenantId;
-            }
-        }
-
-        // 4. HTTP header
-        String header = req.getHeader(HEADER_NAME);
-        if (header != null && !header.isBlank()) {
-            return header;
-        }
-
-        // 5. Fallback: single-tenant dev mode
-        return tenantRepository.findAll().stream()
-                .filter(t -> t.isActive())
-                .findFirst()
-                .map(t -> t.getId())
-                .orElse(null);
+        return null;
     }
 }

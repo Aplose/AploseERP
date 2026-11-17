@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed — accès unique et international
+
+- **Un seul accès pour toutes les entreprises** : plus de sous-domaine par entreprise. On se connecte avec son email (ou identifiant) ; l'entreprise est celle du compte. Email et identifiant sont uniques sur toute la plateforme. Le premier compte d'une entreprise en est l'administrateur et crée les autres comptes.
+- Formulaires publics : adresse `/t/{code entreprise}/form/{code}` (l'adresse `/form/{code}` sans entreprise ne fonctionne plus).
+- **Pays** : les 249 pays ISO 3166, nommés dans la langue de l'utilisateur (inscription, tiers, contacts, paramètres). Le pays devient obligatoire à l'inscription.
+- **Devises** : toutes les devises ISO 4217 en usage (migration V15) ; devise, langue et fuseau horaire de l'entreprise choisis à l'inscription ou déduits du pays. Les nouveaux documents prennent la devise de l'entreprise (au lieu de l'euro).
+- **Langue** : interface dans la langue de l'utilisateur, sinon celle du navigateur ; emails dans la langue du destinataire (modèles anglais ajoutés, migration V16).
+
 ### Security
 
 - Isolation entre entreprises : une fois connecté, l'entreprise courante est toujours celle de l'utilisateur. Auparavant, un sous-domaine ou un en-tête `X-Tenant-ID` donnait accès aux données d'une autre entreprise (#3).

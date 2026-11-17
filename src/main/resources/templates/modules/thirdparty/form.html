@@ -182,7 +182,7 @@
                                 <label class="form-label">Country</label>
                                 <select class="form-select" th:field="*{countryCode}">
                                     <option value="">—</option>
-                                    <option th:each="item : ${countries}" th:value="${item.code}" th:text="${item.code + ' - ' + item.label}">FR - France</option>
+                                    <option th:each="item : ${@referenceData.countries()}" th:value="${item.code}" th:text="${item.label}">France</option>
                                 </select>
                             </div>
                         </div>
@@ -202,7 +202,7 @@
                                 <label class="form-label">Currency</label>
                                 <select class="form-select" th:field="*{currencyCode}">
                                     <option value="">—</option>
-                                    <option th:each="item : ${currencies}" th:value="${item.code}" th:text="${item.code + ' - ' + item.label}">EUR - Euro</option>
+                                    <option th:each="item : ${@referenceData.currencies()}" th:value="${item.code}" th:text="${item.code + ' - ' + item.label}">EUR - Euro</option>
                                 </select>
                             </div>
                             <div class="col-md-3">

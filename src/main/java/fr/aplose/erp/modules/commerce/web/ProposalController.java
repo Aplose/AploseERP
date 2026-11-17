@@ -32,6 +32,7 @@ import java.util.Map;
 public class ProposalController {
 
     private final ProposalService service;
+    private final fr.aplose.erp.tenant.service.CurrentTenantService currentTenant;
     private final DictionaryService dictionaryService;
     private final ExtraFieldService extraFieldService;
 
@@ -90,6 +91,7 @@ public class ProposalController {
     @PreAuthorize("hasAuthority('PROPOSAL_CREATE')")
     public String newForm(Model model) {
         var dto = new ProposalDto();
+        dto.setCurrencyCode(currentTenant.defaultCurrency());
         dto.setDateIssued(java.time.LocalDate.now());
         dto.setDateValidUntil(java.time.LocalDate.now().plusDays(30));
         model.addAttribute("proposal", dto);

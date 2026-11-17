@@ -36,7 +36,8 @@ public class ProductDto {
 
     @NotBlank
     @Size(max = 3)
-    private String currencyCode = "EUR";
+    /** Empty = the company's default currency. */
+    private String currencyCode;
 
     @NotNull
     @DecimalMin("0")

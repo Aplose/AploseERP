@@ -40,8 +40,21 @@ public class SignupDto {
     @Size(max = 100)
     private String stateProvince;
 
-    @Size(max = 2)
+    @NotBlank(message = "{signup.countryCode.required}")
+    @Size(min = 2, max = 2)
     private String countryCode;
+
+    /** ISO 4217 code; empty = the currency of the country. */
+    @Size(max = 3)
+    private String defaultCurrency;
+
+    /** Interface language (en, fr...); empty = deduced from the country. */
+    @Size(max = 10)
+    private String defaultLocale;
+
+    /** IANA time zone (Europe/Paris...); empty = deduced from the country. */
+    @Size(max = 100)
+    private String timezone;
 
     @Size(max = 100)
     private String registrationId;

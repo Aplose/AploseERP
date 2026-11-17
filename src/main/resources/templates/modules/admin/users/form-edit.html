@@ -59,8 +59,10 @@
 
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Timezone</label>
-                                <input type="text" class="form-control" th:field="*{timezone}"
-                                       placeholder="e.g. Europe/Paris"/>
+                                <select class="form-select" th:field="*{timezone}">
+                                    <option value="">—</option>
+                                    <option th:each="z : ${@referenceData.timezones()}" th:value="${z}" th:text="${z}">Europe/Paris</option>
+                                </select>
                             </div>
 
                             <div class="col-md-6">

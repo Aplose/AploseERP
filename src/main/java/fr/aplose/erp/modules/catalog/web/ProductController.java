@@ -30,6 +30,7 @@ import java.util.Map;
 public class ProductController {
 
     private final ProductService service;
+    private final fr.aplose.erp.tenant.service.CurrentTenantService currentTenant;
     private final ProductCategoryService categoryService;
     private final DictionaryService dictionaryService;
     private final ExtraFieldService extraFieldService;
@@ -89,7 +90,9 @@ public class ProductController {
     @GetMapping("/new")
     @PreAuthorize("hasAuthority('PRODUCT_CREATE')")
     public String newForm(Model model) {
-        model.addAttribute("product", new ProductDto());
+        ProductDto newProduct = new ProductDto();
+        newProduct.setCurrencyCode(currentTenant.defaultCurrency());
+        model.addAttribute("product", newProduct);
         model.addAttribute("categories", categoryService.findAll());
         model.addAttribute("currencies", dictionaryService.findByType(DictionaryType.CURRENCY));
         addExtraFieldModelAttributes(model, null);

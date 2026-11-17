@@ -33,7 +33,7 @@ class ProjectServiceTest {
             tenantMock.when(TenantContext::getCurrentTenantId).thenReturn(TENANT_ID);
             when(projectRepo.countByTenantIdAndStatusIn(eq(TENANT_ID), anySet())).thenReturn(3L);
 
-            ProjectService service = new ProjectService(projectRepo, thirdPartyRepo, userRepo);
+            ProjectService service = new ProjectService(projectRepo, null, thirdPartyRepo, userRepo);
             long count = service.countActive();
 
             assertThat(count).isEqualTo(3L);

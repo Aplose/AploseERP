@@ -25,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final fr.aplose.erp.tenant.service.CurrentTenantService currentTenant;
     private final DictionaryService dictionaryService;
 
     @GetMapping
@@ -48,7 +49,9 @@ public class ProjectController {
     @GetMapping("/new")
     @PreAuthorize("hasAuthority('PROJECT_CREATE')")
     public String newForm(Model model) {
-        model.addAttribute("project", new ProjectDto());
+        ProjectDto newProject = new ProjectDto();
+        newProject.setCurrencyCode(currentTenant.defaultCurrency());
+        model.addAttribute("project", newProject);
         model.addAttribute("currencies", dictionaryService.findByType(DictionaryType.CURRENCY));
         return "modules/project/project-form";
     }
