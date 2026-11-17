@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- No unreleased changes at this time.
+### Changed
 
-## [1.0.0-SNAPSHOT] – 2025-02
+- Le dossier de build Maven `target/` n'est plus suivi par git (ajouté au `.gitignore`).
+- Profil `prod` : plus de mot de passe par défaut pour la base de données ; `DB_PASSWORD` doit être défini, sinon l'application refuse de démarrer.
+- Documentation : le compte de démonstration `admin` est précisé comme réservé au profil `dev`.
+
+## [1.0.0-SNAPSHOT] – 2026-02
 
 ### Added
 
